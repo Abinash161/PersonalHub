@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Mirrored from forsm-95871.web.app/music.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 06 Nov 2025 09:16:39 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music</title>
+<meta name="theme-color" content="#0077b6">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&amp;display=swap" rel="stylesheet">
+<style>
+body { font-family:'Poppins',sans-serif; padding-top:70px; background:pink; margin:0; }
+.navbar { font-family:"Mali"; position:fixed; top:0; left:0; width:100%; background:#0077b6; display:flex; justify-content:center; gap:40px; padding:20px 0; z-index:1000; box-shadow:0 2px 6px rgba(0,0,0,.1);}
+.navbar a { background:#d94c6f; color:#fff; text-decoration:none; font-weight:500; display:flex; align-items:center; gap:6px; padding:5px 12px; border-radius:8px; font-size:16px; transition:.2s;}
+.navbar a:hover { background:#005f87; }
+.desk_only { display:inline; }
+@media(max-width:768px){ .desk_only{display:none;} .navbar{justify-content:space-around;} .navbar a{font-size:18px;} }
+#musicList div { background:#fff; padding:10px; margin:10px 40px; border-radius:8px; display:flex; flex-direction:column; gap:6px; position:relative; }
+.deleteBtn { position:absolute; top:5px; right:5px; background:red; color:#fff; border:none; border-radius:4px; cursor:pointer; padding:2px 6px; font-size:12px; }
+#addMusicBtn { position:fixed; bottom:20px; right:20px; background:#d94c6f; color:#fff; border:none; border-radius:50%; width:60px; height:60px; font-size:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,.25);}
+.hidden { display:none !important; }
+.resumeBadge { position:absolute; top:5px; left:5px; background:#0077b6; color:#fff; font-size:11px; padding:2px 6px; border-radius:12px; }
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="notes.html"><i class="fas fa-sticky-note"></i><span class="desk_only">Notes</span></a>
+  <a href="music.html"><i class="fas fa-music"></i><span class="desk_only">Music</span></a>
+  <a href="gallery.html"><i class="fas fa-image"></i><span class="desk_only">Gallery</span></a>
+  <a href="letters.html"><i class="fas fa-envelope-open-text"></i><span class="desk_only">Letters</span></a>
+</nav>
+
+<h2 style="text-align:center;">My Music 🎵</h2>
+<div id="musicList"></div>
+
+<button id="addMusicBtn" title="Add music">+</button>
+
+<!-- Hidden direct file input -->
+<input type="file" id="musicFile" accept="audio/*" multiple class="hidden" />
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, deleteDoc, doc,
+  onSnapshot, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAbancsm9ps84wLP8G5-PlqZ2qORswgtI4",
+  authDomain: "forsm-95871.firebaseapp.com",
+  projectId: "forsm-95871",
+  storageBucket: "forsm-95871.appspot.com",
+  messagingSenderId: "539969325228",
+  appId: "1:539969325228:web:69b5ce6518841ad5f67709"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const auth = getAuth(app);
+
+const musicList   = document.getElementById("musicList");
+const addMusicBtn = document.getElementById("addMusicBtn");
+const fileInput   = document.getElementById("musicFile");
+
+let unsubscribe = null;
+
+// Resume storage keys
+const LAST_TRACK_URL_KEY = "music_last_track_url";
+const LAST_TIME_KEY      = "music_last_track_time";
+
+// Open picker
+addMusicBtn.addEventListener("click", () => fileInput.click());
+
+// Upload & save
+fileInput.addEventListener("change", async e => {
+  const files = Array.from(e.target.files || []);
+  if (!files.length) return;
+  for (const f of files) {
+    try {
+      const title = f.name.replace(/\.[^.]+$/, "");
+      const url = await uploadToCloudinary(f);
+      await addDoc(collection(db,"music"), { title, url, createdAt: serverTimestamp() });
+    } catch(err){ console.log("Upload failed:", err); }
+  }
+  fileInput.value = "";
+});
+
+async function uploadToCloudinary(file){
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("upload_preset", "unsigned_upload");
+  fd.append("folder", "music");
+  const res = await fetch("https://api.cloudinary.com/v1_1/dzsoan16b/upload", { method:"POST", body:fd });
+  const data = await res.json();
+  if (!data.secure_url) throw new Error(data.error?.message || "Upload failed");
+  return data.secure_url;
+}
+
+function startListener(){
+  if (unsubscribe) unsubscribe();
+  unsubscribe = onSnapshot(collection(db,"music"), snap => renderList(snap));
+}
+
+async function renderList(snap){
+  const lastUrl  = localStorage.getItem(LAST_TRACK_URL_KEY);
+  const lastTime = parseFloat(localStorage.getItem(LAST_TIME_KEY) || "0");
+
+  // Keep reference to current playing to avoid flicker
+  const prevPlayingSrc = (() => {
+    const current = document.querySelector("#musicList audio:not(paused)");
+    if (current && !current.paused) return current.src;
+    return null;
+  })();
+
+  musicList.innerHTML = "";
+  const audioEls = [];
+
+  snap.forEach(docSnap => {
+    const data = docSnap.data();
+    const wrap = document.createElement("div");
+    wrap.innerHTML = `
+      <strong>${data.title || "Untitled"}</strong>
+      <audio controls preload="metadata" playsinline src="${data.url}"></audio>
+      <button class="deleteBtn">Delete</button>
+      <button class="downloadBtn" style="position:absolute; top:5px; right:60px; background:#0077b6; color:#fff; border:none; border-radius:4px; cursor:pointer; padding:2px 6px; font-size:12px;">Download</button>
+    `;
+    const audioEl = wrap.querySelector("audio");
+    const thisIndex = audioEls.length;
+
+    // Pause others
+    audioEl.addEventListener("play", () => {
+      document.querySelectorAll("#musicList audio").forEach(a => {
+        if (a !== audioEl && !a.paused) a.pause();
+      });
+      localStorage.setItem(LAST_TRACK_URL_KEY, audioEl.src);
+      localStorage.setItem(LAST_TIME_KEY, String(audioEl.currentTime || 0));
+    });
+
+    // Throttled progress save
+    let lastSaved = 0;
+    audioEl.addEventListener("timeupdate", () => {
+      if (audioEl.paused) return;
+      if (Math.abs(audioEl.currentTime - lastSaved) > 2) {
+        lastSaved = audioEl.currentTime;
+        if (audioEl.src === localStorage.getItem(LAST_TRACK_URL_KEY)) {
+          localStorage.setItem(LAST_TIME_KEY, String(audioEl.currentTime));
+        }
+      }
+    });
+
+    // Auto next
+    audioEl.addEventListener("ended", () => {
+      if (audioEl.src === localStorage.getItem(LAST_TRACK_URL_KEY)) {
+        localStorage.setItem(LAST_TIME_KEY, "0");
+      }
+      const next = musicList.querySelectorAll("audio")[thisIndex + 1];
+      if (next) next.play().catch(()=>{});
+    });
+
+    // Delete
+    wrap.querySelector(".deleteBtn").addEventListener("click", async () => {
+      await deleteDoc(doc(db,"music", docSnap.id));
+      if (audioEl.src === localStorage.getItem(LAST_TRACK_URL_KEY)) {
+        localStorage.removeItem(LAST_TRACK_URL_KEY);
+        localStorage.removeItem(LAST_TIME_KEY);
+      }
+    });
+
+    // Download
+    wrap.querySelector(".downloadBtn").addEventListener("click", async () => {
+      try {
+        const response = await fetch(data.url);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = data.title || 'music';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } catch (err) {
+        console.log("Download failed:", err);
+      }
+    });
+
+    musicList.appendChild(wrap);
+    audioEls.push(audioEl);
+  });
+
+  if (!audioEls.length) return;
+
+  // Decide which to play
+  let target = null;
+  if (lastUrl) {
+    target = audioEls.find(a => a.src === lastUrl) || null;
+  }
+
+  if (target) {
+    // Resume position
+    if (target.readyState < 1) {
+      await new Promise(res => target.addEventListener("loadedmetadata", res, { once:true }));
+    }
+    if (!isNaN(lastTime) && lastTime > 0 && lastTime < (target.duration || Infinity)) {
+      try { target.currentTime = lastTime; } catch {}
+    }
+    tryAutoplay(target);
+  } else if (!prevPlayingSrc) {
+    // No resume; autoplay first if user had nothing already playing
+    tryAutoplay(audioEls[0]);
+  }
+}
+
+// Save on unload
+window.addEventListener("beforeunload", () => {
+  const last = localStorage.getItem(LAST_TRACK_URL_KEY);
+  if (!last) return;
+  const el = Array.from(document.querySelectorAll("#musicList audio")).find(a => a.src === last);
+  if (el) localStorage.setItem(LAST_TIME_KEY, String(el.currentTime || 0));
+});
+
+// Auth
+onAuthStateChanged(auth, user => {
+  if (!user) window.location.href = "login.html";
+  else startListener();
+});
+
+// SW (optional)
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-workerae24.js?v=14', { scope: '/' }).catch(()=>{});
+}
+
+// Add this helper (place near top of script after constants)
+function tryAutoplay(audio){
+  if(!audio) return;
+  audio.autoplay = true;
+  const attempt = () => audio.play().catch(err => {
+    // Fallback: wait for first user interaction
+    const unlock = () => {
+      audio.play().catch(()=>{});
+      window.removeEventListener('pointerdown', unlock);
+      window.removeEventListener('keydown', unlock);
+      window.removeEventListener('touchstart', unlock);
+    };
+    window.addEventListener('pointerdown', unlock, { once:true });
+    window.addEventListener('keydown', unlock, { once:true });
+    window.addEventListener('touchstart', unlock, { once:true });
+  });
+  // If metadata not loaded yet, wait first
+  if (audio.readyState < 1) {
+    audio.addEventListener('loadedmetadata', attempt, { once:true });
+  } else {
+    attempt();
+  }
+}
+</script>
+</body>
+
+<!-- Mirrored from forsm-95871.web.app/music.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 06 Nov 2025 09:16:41 GMT -->
+</html>

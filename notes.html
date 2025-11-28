@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Mirrored from forsm-95871.web.app/notes.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 06 Nov 2025 09:16:38 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notes</title>
+  <meta name="theme-color" content="#0077b6">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="manifest" href="manifest.json">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&amp;family=Roboto:wght@300;400;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Mali:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+ <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: #f8f9fa;
+    }
+
+    /* Navbar */
+    .navbar {
+      font-family: "Mali";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: #0077b6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 40px;
+      padding: 20px 0;
+      z-index: 1000;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .navbar a {
+      background-color: #d94c6f;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      transition: 0.2s;
+      font-size: 16px;
+    }
+    .navbar a:hover {
+      background: #005f87;
+    }
+    .desk_only { display: inline; }
+    @media (max-width: 768px) {
+      .desk_only { display: none; }
+      .navbar { justify-content: space-around; }
+      .navbar a { font-size: 18px; padding: 6px 10px; }
+    }
+
+    /* Main container */
+    .main-container {
+      flex: 1;
+      display: flex;
+      margin-top: 70px;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background: pink;
+      color: black;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    .sidebar h2 {
+      margin: 0 0 10px 0;
+      text-align: center;
+    }
+    .note-item {
+      padding: 10px;
+      margin: 5px 0;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .note-item:hover { background: #eaeaea; }
+    .note-item i { cursor: pointer; }
+
+    /* Editor */
+    .editor {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      padding: 10px;
+      box-sizing: border-box;
+      position: relative;
+      background: white;
+    }
+    .editor textarea {
+      flex: 1;
+      margin-top: 10px;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+      resize: none;
+      font-size: 16px;
+      font-family: "Poppins", sans-serif;
+      background: #f0f4f8;
+    }
+    .editor .title {
+      text-align: center;
+      padding: 5px;
+      margin-bottom: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      outline: none;
+      width: 100%;
+      background: transparent;
+    }
+    .save-btn {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      background: #d94c6f;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* Add button */
+    .add-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #d94c6f;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    #closeBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ff4d4d;
+  border: none;
+  color: white;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+    /* Responsive */
+    @media(max-width:768px){
+      .sidebar { width: 100%; position: absolute; left: 0; top: 70px; }
+      .editor { width: 100%; height: 100%; position: absolute; top: 70px; left: 0; background: white; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="notes.html"><i class="fas fa-sticky-note"></i><span class="desk_only">Notes</span></a>
+    <a href="music.html"><i class="fas fa-music"></i><span class="desk_only">Music</span></a>
+    <a href="gallery.html"><i class="fas fa-image"></i><span class="desk_only">Gallery</span></a>
+    <a href="letters.html"><i class="fas fa-envelope-open-text"></i><span class="desk_only">Letters</span></a>
+  </nav>
+
+  <!-- Main container -->
+  <div class="main-container">
+    <div class="sidebar">
+      <h2>Notes</h2>
+      <div id="notesList"></div>
+    </div>
+
+    <div class="editor">
+          <button id="closeBtn">×</button>
+      <button class="save-btn">Save</button>
+      <input class="title" id="noteTitle" placeholder="Note Title">
+      <textarea id="noteContent" placeholder="Write your note here..."></textarea>
+    </div>
+  </div>
+
+  <button class="add-btn"><i class="fas fa-plus"></i></button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAbancsm9ps84wLP8G5-PlqZ2qORswgtI4",
+      authDomain: "forsm-95871.firebaseapp.com",
+      projectId: "forsm-95871",
+      storageBucket: "forsm-95871.appspot.com",
+      messagingSenderId: "539969325228",
+      appId: "1:539969325228:web:69b5ce6518841ad5f67709"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    enableIndexedDbPersistence(db).catch(()=>{});
+    const auth = getAuth(app);
+
+    const notesList = document.getElementById("notesList");
+    const editor = document.querySelector(".editor");
+    const addBtn = document.querySelector(".add-btn");
+    const saveBtn = document.querySelector(".save-btn");
+    const noteTitle = document.getElementById("noteTitle");
+    const noteContent = document.getElementById("noteContent");
+    const closeBtn = document.getElementById("closeBtn");
+
+    let currentNoteId = null;
+
+    // Auth check
+    onAuthStateChanged(auth, user => {
+      if(!user) window.location.href = "index-2.html";
+      else loadNotes();
+    });
+
+    // Add new note
+    addBtn.addEventListener("click", () => {
+      currentNoteId = null;
+      noteTitle.value = "";
+      noteContent.value = "";
+      editor.style.display = "flex";
+      if(window.innerWidth < 768) document.querySelector(".sidebar").style.display = "none";
+    });
+
+    // Fix: Hide editor and show sidebar on close
+    closeBtn.addEventListener("click", () => {
+      editor.style.display = "none";
+      if(window.innerWidth < 768) document.querySelector(".sidebar").style.display = "block";
+    });
+
+    // Save note
+    saveBtn.addEventListener("click", async () => {
+      const title = noteTitle.value.trim();
+      const content = noteContent.value.trim();
+      if(!title && !content) return;
+
+      if(currentNoteId){
+        await updateDoc(doc(db, "notes", currentNoteId), { title, content });
+      } else {
+        await addDoc(collection(db, "notes"), { title, content });
+      }
+      editor.style.display = "none";
+      if(window.innerWidth < 768) document.querySelector(".sidebar").style.display = "block";
+      loadNotes();
+    });
+
+    // Load all notes
+    async function loadNotes(){
+      notesList.innerHTML = "";
+      onSnapshot(collection(db, "notes"), (snap) => {
+        notesList.innerHTML = "";
+        snap.forEach(d => {
+          const data = d.data();
+          const div = document.createElement("div");
+          div.className = "note-item";
+          div.innerHTML = `
+            <span>${data.title || "Untitled"}</span>
+            <i class="fas fa-times" data-id="${d.id}"></i>
+          `;
+          div.addEventListener("click", e => {
+            if(e.target.tagName === "I") return;
+            currentNoteId = d.id;
+            noteTitle.value = data.title || "";
+            noteContent.value = data.content || "";
+            editor.style.display = "flex";
+            if(window.innerWidth < 768) document.querySelector(".sidebar").style.display = "none";
+          });
+          div.querySelector("i").addEventListener("click", async e => {
+            await deleteDoc(doc(db, "notes", e.target.dataset.id));
+          });
+          notesList.appendChild(div);
+        });
+      });
+    }
+if ('serviceWorker' in navigator) {
+  (async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('service-workere5bf.js?v=12', { scope: '/', updateViaCache: 'none' });
+      reg.addEventListener('updatefound', () => {
+        const sw = reg.installing;
+        if (!sw) return;
+        sw.addEventListener('statechange', () => {
+          if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+            sw.postMessage({ type: 'SKIP_WAITING' });
+          }
+        });
+      });
+      navigator.serviceWorker.addEventListener('controllerchange', () => location.reload());
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update(); });
+      // Optional: log SW version
+      navigator.serviceWorker.addEventListener('message', e => { if (e.data?.type === 'VERSION') console.log('SW', e.data.version); });
+      navigator.serviceWorker.controller?.postMessage({ type: 'GET_VERSION' });
+    } catch (e) { console.log('SW registration failed:', e); }
+  })();
+}
+  </script>
+</body>
+
+<!-- Mirrored from forsm-95871.web.app/notes.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 06 Nov 2025 09:16:39 GMT -->
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+<!-- Mirrored from forsm-95871.web.app/ by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 06 Nov 2025 09:16:22 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+  <title>Login</title>
+<meta name="theme-color" content="#0077b6">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="manifest" href="manifest.json">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+
+   
+    <style>
+   body {
+      font-family: "mali", sans-serif;
+      background-color: pink;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+
+    .container {
+      background: #d6336c;
+      padding: 20px 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      justify-content: center;
+      text-align: center;
+      width: 300px;
+    }
+     h2 {
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+
+    button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background: #4CAF50;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background: #45a049;
+    }
+
+
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+   </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Login 💌</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+<button id="loginBtn">Login</button>
+    <p id="msg"></p>
+  </div>
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyAbancsm9ps84wLP8G5-PlqZ2qORswgtI4",
+    authDomain: "forsm-95871.firebaseapp.com",
+    projectId: "forsm-95871",
+    storageBucket: "forsm-95871.appspot.com",
+    messagingSenderId: "539969325228",
+    appId: "1:539969325228:web:69b5ce6518841ad5f67709",
+    measurementId: "G-D24WLLV69V"
+  };
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const loginBtn = document.getElementById("loginBtn");
+loginBtn.addEventListener("click", async () => {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    window.location.href = "home.html"; // redirect after login
+  } catch (error) {
+    alert(error.message);
+  }
+});
+
+document.querySelector('.container').style.display = 'none';
+
+onAuthStateChanged(auth, user => {
+  if (user) {
+    window.location.href = "home.html";
+  } else {
+    document.querySelector('.container').style.display = 'block';
+  }
+});
+</script>
+<script>
+// 1) One-time kill switch: visit /index.html?reset-sw to purge old SW and caches
+(async () => {
+  if (!('serviceWorker' in navigator)) return;
+  if (location.search.includes('reset-sw')) {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map(r => r.unregister()));
+    const keys = await caches.keys();
+    await Promise.all(keys.map(k => caches.delete(k)));
+    // remove query and reload clean
+    const url = new URL(location.html); url.search = ''; location.replace(url.toString());
+    return;
+  }
+
+  // 2) Register current SW (disable HTTP caching via query)
+  const reg = await navigator.serviceWorker.register('service-workerf500.js?v=13', { scope: '/', updateViaCache: 'none' });
+
+  // 3) Activate new worker immediately when found
+  reg.addEventListener('updatefound', () => {
+    const sw = reg.installing;
+    if (!sw) return;
+    sw.addEventListener('statechange', () => {
+      if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+        sw.postMessage({ type: 'SKIP_WAITING' });
+      }
+    });
+  });
+
+  // 4) When controller changes, reload to use the new SW
+  navigator.serviceWorker.addEventListener('controllerchange', () => location.reload());
+
+  // 5) Help the browser check for updates whenever the page becomes visible
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') reg.update();
+  });
+
+  // Optional: log SW version to verify on device
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data?.type === 'VERSION') console.log('SW version:', e.data.version);
+  });
+  navigator.serviceWorker.controller?.postMessage({ type: 'GET_VERSION' });
+})();
+</script>
+</body>
+
+<!-- Mirrored from forsm-95871.web.app/ by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 06 Nov 2025 09:16:31 GMT -->
+</html>
