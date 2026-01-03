@@ -5,8 +5,17 @@
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
 <head>
   <title>Login</title>
-<meta name="theme-color" content="#0077b6">
-<link rel="icon" href="icons/icon-192.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Your personal digital sanctuary for notes, music, photos, and letters">
+  <meta name="theme-color" content="#0077b6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="PersonalHub">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="msapplication-TileColor" content="#0077b6">
+  <meta name="msapplication-config" content="browserconfig.xml">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="manifest" href="manifest.json">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -161,6 +170,57 @@ onAuthStateChanged(auth, user => {
   });
   navigator.serviceWorker.controller?.postMessage({ type: 'GET_VERSION' });
 })();
+
+// PWA Install Prompt
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  
+  // Show install button/banner after login
+  if (document.querySelector('.container').style.display !== 'none') {
+    showInstallPrompt();
+  }
+});
+
+function showInstallPrompt() {
+  const installBanner = document.createElement('div');
+  installBanner.id = 'installBanner';
+  installBanner.innerHTML = `
+    <div style="background: #0077b6; color: white; padding: 10px; text-align: center; position: fixed; top: 0; left: 0; right: 0; z-index: 1001; font-size: 14px;">
+      <span>📱 Install PersonalHub for a better experience!</span>
+      <button onclick="installApp()" style="margin-left: 10px; background: #d94c6f; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Install</button>
+      <button onclick="dismissInstallPrompt()" style="margin-left: 5px; background: transparent; color: white; border: 1px solid white; padding: 5px 10px; border-radius: 4px; cursor: pointer;">✕</button>
+    </div>
+  `;
+  document.body.appendChild(installBanner);
+}
+
+window.installApp = async () => {
+  if (!deferredPrompt) return;
+  
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  
+  if (outcome === 'accepted') {
+    console.log('PWA installed successfully');
+  }
+  
+  deferredPrompt = null;
+  dismissInstallPrompt();
+};
+
+window.dismissInstallPrompt = () => {
+  const banner = document.getElementById('installBanner');
+  if (banner) banner.remove();
+};
+
+// Handle app installed event
+window.addEventListener('appinstalled', () => {
+  console.log('PersonalHub installed successfully!');
+  dismissInstallPrompt();
+});
 </script>
 </body>
 

@@ -1,4 +1,4 @@
-const VERSION = 'v16'; // bump to force update
+const VERSION = 'v17'; // bump to force update
 const STATIC_CACHE = `static-${VERSION}`;
 const MEDIA_CACHE = `media-${VERSION}`;
 const HTML_CACHE  = `html-${VERSION}`;

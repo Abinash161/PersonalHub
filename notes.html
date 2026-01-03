@@ -11,6 +11,17 @@
 <link rel="icon" href="icons/icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="prefetch" href="music.html">
+<link rel="prefetch" href="gallery.html">
+<link rel="prefetch" href="letters.html">
+<link rel="preload" href="music.html" as="document">
+<link rel="preload" href="shared-music-player.js" as="script">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://widget.cloudinary.com" crossorigin>
+<link rel="dns-prefetch" href="https://www.gstatic.com">
+<link rel="dns-prefetch" href="https://widget.cloudinary.com">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js">
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&amp;family=Roboto:wght@300;400;700&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&amp;display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Mali:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
@@ -63,11 +74,37 @@
       .navbar a { font-size: 18px; padding: 6px 10px; }
     }
 
+    /* Now Playing Bar */
+    #nowPlaying { position:fixed; top:70px; left:0; width:100%; background:linear-gradient(135deg,#d94c6f,#0077b6); padding:12px 25px; z-index:999; display:none; align-items:center; gap:12px; box-shadow:0 2px 8px rgba(0,0,0,.2); color:#fff; box-sizing:border-box; }
+    #nowPlaying.active { display:flex; }
+    .visualizer { display:flex; gap:3px; align-items:flex-end; height:30px; flex-shrink:0; }
+    .visualizer span { width:4px; background:#fff; border-radius:2px; animation:wave 0.8s ease-in-out infinite; }
+    .visualizer span:nth-child(1) { animation-delay:0s; }
+    .visualizer span:nth-child(2) { animation-delay:0.1s; }
+    .visualizer span:nth-child(3) { animation-delay:0.2s; }
+    .visualizer span:nth-child(4) { animation-delay:0.3s; }
+    .visualizer span:nth-child(5) { animation-delay:0.4s; }
+    @keyframes wave { 0%, 100% { height:8px; } 50% { height:28px; } }
+    #nowPlayingTitle { flex:1; font-weight:600; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+    .playControls { display:flex; gap:8px; flex-shrink:0; }
+    .playControls button { background:rgba(255,255,255,0.2); border:2px solid #fff; color:#fff; width:38px; height:38px; border-radius:50%; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center; transition:.2s; flex-shrink:0; }
+    .playControls button:hover { background:rgba(255,255,255,0.3); transform:scale(1.05); }
+    .playControls button:active { transform:scale(0.95); }
+
+    @media (max-width: 768px) {
+      #nowPlaying { padding:8px 15px; gap:8px; }
+      .visualizer { height:22px; gap:2px; }
+      .visualizer span { width:3px; }
+      @keyframes wave { 0%, 100% { height:6px; } 50% { height:20px; } }
+      #nowPlayingTitle { font-size:14px; }
+      .playControls button { width:32px; height:32px; font-size:13px; }
+    }
+
     /* Main container */
     .main-container {
       flex: 1;
       display: flex;
-      margin-top: 70px;
+      margin-top: 130px;
       overflow: hidden;
     }
 
@@ -177,8 +214,9 @@
 
     /* Responsive */
     @media(max-width:768px){
-      .sidebar { width: 100%; position: absolute; left: 0; top: 70px; }
-      .editor { width: 100%; height: 100%; position: absolute; top: 70px; left: 0; background: white; }
+      .sidebar { width: 100%; position: absolute; left: 0; top: 135px; }
+      .editor { width: 100%; height: 100%; position: absolute; top: 135px; left: 0; background: white; }
+      body { padding-top: 135px; }
     }
   </style>
 </head>
@@ -190,6 +228,17 @@
     <a href="gallery.html"><i class="fas fa-image"></i><span class="desk_only">Gallery</span></a>
     <a href="letters.html"><i class="fas fa-envelope-open-text"></i><span class="desk_only">Letters</span></a>
   </nav>
+
+  <!-- Now Playing Bar -->
+  <div id="nowPlaying">
+    <div class="visualizer">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div id="nowPlayingTitle">Nothing playing</div>
+    <div class="playControls">
+      <button id="playPauseBtn" title="Play/Pause"><i class="fas fa-play"></i></button>
+    </div>
+  </div>
 
   <!-- Main container -->
   <div class="main-container">
@@ -325,6 +374,7 @@ if ('serviceWorker' in navigator) {
   })();
 }
   </script>
+  <script src="shared-music-player.js" defer></script>
 </body>
 
 <!-- Mirrored from forsm-95871.web.app/notes.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 06 Nov 2025 09:16:39 GMT -->

@@ -11,15 +11,41 @@
 <link rel="icon" href="icons/icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="prefetch" href="notes.html">
+<link rel="prefetch" href="music.html">
+<link rel="prefetch" href="letters.html">
+<link rel="preload" href="music.html" as="document">
+<link rel="preload" href="shared-music-player.js" as="script">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://widget.cloudinary.com" crossorigin>
+<link rel="dns-prefetch" href="https://www.gstatic.com">
+<link rel="dns-prefetch" href="https://widget.cloudinary.com">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Mali:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
 <style>
-body { font-family:'Poppins',sans-serif; background:pink; padding-top:60px; }
+body { font-family:'Poppins',sans-serif; background:pink; padding-top:130px; }
 .navbar { position: fixed; top: 0; left: 0; width: 100%; font-family: "Mali"; background: #0077b6; display: flex; justify-content: center; align-items: center; gap: 40px; padding: 20px 0; z-index: 1000; box-shadow: 0 2px 6px rgba(0,0,0,0.1);}
 .navbar a { background: #d94c6f; color: white; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 8px; transition: 0.2s; font-size: 16px;}
 .navbar a:hover { background: #005f87; }
 .desk_only { display: inline; }
-@media (max-width: 768px) { .desk_only { display: none; } .navbar { justify-content: space-around; } .navbar a { font-size: 18px; padding: 6px 10px; } }
+#nowPlaying { position:fixed; top:70px; left:0; width:100%; background:linear-gradient(135deg,#d94c6f,#0077b6); padding:12px 25px; z-index:999; display:none; align-items:center; gap:12px; box-shadow:0 2px 8px rgba(0,0,0,.2); color:#fff; box-sizing:border-box; }
+#nowPlaying.active { display:flex; }
+.visualizer { display:flex; gap:3px; align-items:flex-end; height:30px; flex-shrink:0; }
+.visualizer span { width:4px; background:#fff; border-radius:2px; animation:wave 0.8s ease-in-out infinite; }
+.visualizer span:nth-child(1) { animation-delay:0s; }
+.visualizer span:nth-child(2) { animation-delay:0.1s; }
+.visualizer span:nth-child(3) { animation-delay:0.2s; }
+.visualizer span:nth-child(4) { animation-delay:0.3s; }
+.visualizer span:nth-child(5) { animation-delay:0.4s; }
+@keyframes wave { 0%, 100% { height:8px; } 50% { height:28px; } }
+#nowPlayingTitle { flex:1; font-weight:600; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.playControls { display:flex; gap:8px; flex-shrink:0; }
+.playControls button { background:rgba(255,255,255,0.2); border:2px solid #fff; color:#fff; width:38px; height:38px; border-radius:50%; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center; transition:.2s; flex-shrink:0; }
+.playControls button:hover { background:rgba(255,255,255,0.3); transform:scale(1.05); }
+.playControls button:active { transform:scale(0.95); }
+@media (max-width: 768px) { .desk_only { display: none; } .navbar { justify-content: space-around; } .navbar a { font-size: 18px; padding: 6px 10px; } body { padding-top:115px; } #nowPlaying { padding:8px 15px; gap:8px; } .visualizer { height:22px; gap:2px; } .visualizer span { width:3px; } @keyframes wave { 0%, 100% { height:6px; } 50% { height:20px; } } #nowPlayingTitle { font-size:14px; } .playControls button { width:32px; height:32px; font-size:13px; } }
 #foldersList { display: flex; flex-wrap: wrap; gap: 24px; padding: 20px; }
 .folderItem { background: white; border-radius: 12px; width: 120px; height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.07); cursor: pointer; position: relative; }
 .folderItem .folderIcon { font-size: 38px; color: #0077b6; }
@@ -242,6 +268,16 @@ body { font-family:'Poppins',sans-serif; background:pink; padding-top:60px; }
   <a href="gallery.html"><i class="fas fa-image"></i><span class="desk_only">Gallery</span></a>
   <a href="letters.html"><i class="fas fa-envelope-open-text"></i><span class="desk_only">Letters</span></a>
 </nav>
+
+<div id="nowPlaying">
+  <div class="visualizer">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+  <div id="nowPlayingTitle">Nothing playing</div>
+  <div class="playControls">
+    <button id="playPauseBtn" title="Play/Pause"><i class="fas fa-play"></i></button>
+  </div>
+</div>
 
 <h2 style="text-align:center;">My Gallery 🖼️</h2>
 <div id="foldersList"></div>
@@ -839,6 +875,7 @@ if ('serviceWorker' in navigator) {
 
 
 </script>
+<script src="shared-music-player.js" defer></script>
 </body>
 
 <!-- Mirrored from forsm-95871.web.app/gallery.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 06 Nov 2025 09:16:42 GMT -->
