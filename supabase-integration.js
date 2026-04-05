@@ -5,8 +5,8 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 import { EventEmitter, StateManager, CacheLayer, Debouncer } from './performance-core.js';
 
 // Supabase Configuration
-const SUPABASE_URL = 'https://your-project.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_q6HNRlzeUgI6I-5qEtNh3Q_ilkfyKhJ';
+const SUPABASE_URL = 'https://fvpedrabqhcpiifjcfik.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2cGVkcmFicWhjcGlpZmpjZmlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTIwMzksImV4cCI6MjA5MDkyODAzOX0.VHTH80WcqX4B0q4G-q_kKAS4RHyDBVONEkRMFSTPTcc';
 const BUCKET_MUSIC = 'music-files';
 const BUCKET_GALLERY = 'gallery-images';
 
