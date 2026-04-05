@@ -449,6 +449,16 @@ class SupabaseAuth {
     if (error) throw error;
 
     this.user = data.user;
+    
+    // Ensure user exists in public users table
+    if (data.user) {
+      try {
+        await this.ensureUserRecord(data.user.id, data.user.email);
+      } catch (e) {
+        console.warn('Could not ensure user record:', e.message);
+      }
+    }
+    
     this.notifyListeners();
 
     return data.user;
@@ -466,6 +476,16 @@ class SupabaseAuth {
     if (error) throw error;
 
     this.user = data.user;
+    
+    // Ensure user exists in public users table
+    if (data.user) {
+      try {
+        await this.ensureUserRecord(data.user.id, data.user.email);
+      } catch (e) {
+        console.warn('Could not ensure user record:', e.message);
+      }
+    }
+    
     this.notifyListeners();
 
     return data.user;
@@ -484,15 +504,83 @@ class SupabaseAuth {
   }
 
   /**
-   * Get current user
+   * Get current user - with JWT error handling
    */
   async getUser() {
-    const { data: { user }, error } = await supabase.auth.getUser();
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
 
-    if (error) throw error;
+      if (error) {
+        console.error('Auth error:', error);
+        // Check if it's a JWT token error
+        if (error.message && error.message.includes('missing sub claim')) {
+          console.error('JWT token is invalid - user needs to log in again');
+          this.user = null;
+          this.notifyListeners();
+          throw new Error('Your login session is invalid. Please log out and log in again.');
+        }
+        throw error;
+      }
 
-    this.user = user;
-    return user;
+      this.user = user;
+      
+      // Ensure user exists in public users table for foreign key constraints
+      if (user) {
+        try {
+          await this.ensureUserRecord(user.id, user.email);
+        } catch (e) {
+          console.warn('Could not ensure user record:', e.message);
+        }
+      }
+      
+      return user;
+    } catch (e) {
+      console.error('getUser error:', e);
+      this.user = null;
+      this.notifyListeners();
+      throw e;
+    }
+  }
+
+  /**
+   * Ensure user record exists in users table
+   */
+  async ensureUserRecord(userId, email) {
+    try {
+      // Check if user exists
+      const { data, error: checkError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', userId)
+        .single();
+
+      if (!checkError && data) {
+        console.log('✓ User record exists:', userId);
+        return; // User already exists
+      }
+
+      console.log('Creating user record for:', userId);
+
+      // Create user record if it doesn't exist
+      const { error: insertError } = await supabase.from('users').insert({
+        id: userId,
+        email: email,
+        created_at: new Date().toISOString()
+      });
+
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        // Don't throw - let it continue, might already exist
+        if (insertError.code !== '23505') { // 23505 = duplicate key
+          console.warn('Could not create user record:', insertError.message);
+        }
+      } else {
+        console.log('✓ User record created successfully');
+      }
+    } catch (e) {
+      console.error('ensureUserRecord error:', e);
+      // Don't throw - continue anyway
+    }
   }
 
   /**
@@ -524,6 +612,7 @@ export const storage = {
   gallery: new SupabaseStorage(BUCKET_GALLERY)
 };
 export const auth = new SupabaseAuth();
+export { supabase };  // Export raw Supabase client for direct use
 
 // Initialize on load
 if (document.readyState === 'loading') {

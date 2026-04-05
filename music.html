@@ -1,93 +1,556 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Music Player</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0077b6">
-  <link rel="icon" href="icons/icon-192.png" type="image/png">
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; }
-    body { font-family: 'Poppins', sans-serif; padding: 20px; background: #f5f5f5; margin: 0; }
-    h1 { color: #0077b6; text-align: center; margin-top: 0; }
-    #musicList { list-style: none; padding: 0; max-width: 800px; margin: 20px auto; }
-    .musicItem { background: white; padding: 15px; border-radius: 8px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .musicItem strong { color: #333; font-size: 16px; }
-    .musicItem audio { width: 100%; height: 30px; }
-    .deleteBtn { padding: 8px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
-    .deleteBtn:hover { background: #c82333; }
-    #uploadMusicBtn { padding: 12px 20px; margin-bottom: 20px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; display: block; margin-left: auto; margin-right: auto; }
-    #uploadMusicBtn:hover { background: #218838; }
-    #musicFile { display: none; }
-    .container { max-width: 800px; margin: 0 auto; }
-    .navbar { background: #0077b6; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
-    .navbar a { color: white; text-decoration: none; padding: 8px 16px; background: rgba(255,255,255,0.2); border-radius: 4px; transition: 0.2s; }
-    .navbar a:hover { background: rgba(255,255,255,0.3); }
-    .navbar a.active { background: #d94c6f; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music</title>
+<meta name="theme-color" content="#0077b6">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<!-- Aggressive preload for music continuity and performance -->
+<link rel="preload" href="shared-music-player.js" as="script">
+<link rel="preload" href="supabase-integration.js" as="script">
+<link rel="prefetch" href="notes.html">
+<link rel="prefetch" href="gallery.html">
+<link rel="prefetch" href="letters.html">
+<link rel="preconnect" href="https://fvpedrabqhcpiifjcfik.supabase.co">
+<style>
+body { font-family:'Poppins',sans-serif; padding-top:140px; background:pink; margin:0; }
+.navbar { font-family:"Mali"; position:fixed; top:0; left:0; width:100%; background:#0077b6; display:flex; justify-content:space-between; align-items:center; padding:20px 30px; z-index:1000; box-shadow:0 2px 6px rgba(0,0,0,.1); box-sizing:border-box; }
+.navbar-left { display:flex; gap:40px; flex:1; justify-content:center; }
+.navbar-right { display:flex; align-items:center; gap:15px; }
+#logoutBtn { background:#ff6b6b; color:#fff; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:6px; transition:.3s; font-family:'Mali',sans-serif; font-size:14px; }
+#logoutBtn:hover { background:#ff5252; transform:scale(1.05); }
+.navbar a { background:#d94c6f; color:#fff; text-decoration:none; font-weight:500; display:flex; align-items:center; gap:6px; padding:5px 12px; border-radius:8px; font-size:16px; transition:.2s;}
+.navbar a:hover { background:#005f87; }
+.desk_only { display:inline; }
+#nowPlaying { position:fixed; top:70px; left:0; width:100%; background:linear-gradient(135deg,#d94c6f,#0077b6); padding:12px 25px; z-index:999; display:none; align-items:center; gap:12px; box-shadow:0 2px 8px rgba(0,0,0,.2); color:#fff; box-sizing:border-box; }
+#nowPlaying.active { display:flex; }
+.visualizer { display:flex; gap:3px; align-items:flex-end; height:30px; flex-shrink:0; }
+.visualizer span { width:4px; background:#fff; border-radius:2px; animation:wave 0.8s ease-in-out infinite; }
+.visualizer span:nth-child(1) { animation-delay:0s; }
+.visualizer span:nth-child(2) { animation-delay:0.1s; }
+.visualizer span:nth-child(3) { animation-delay:0.2s; }
+.visualizer span:nth-child(4) { animation-delay:0.3s; }
+.visualizer span:nth-child(5) { animation-delay:0.4s; }
+@keyframes wave { 0%, 100% { height:8px; } 50% { height:28px; } }
+#nowPlayingTitle { flex:1; font-weight:600; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.playControls { display:flex; gap:8px; flex-shrink:0; }
+.playControls button { background:rgba(255,255,255,0.2); border:2px solid #fff; color:#fff; width:38px; height:38px; border-radius:50%; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center; transition:.2s; flex-shrink:0; }
+.playControls button:hover { background:rgba(255,255,255,0.3); transform:scale(1.05); }
+.playControls button:active { transform:scale(0.95); }
+@media(max-width:768px){ 
+  .desk_only{display:none;} 
+  .navbar{
+    padding:15px 20px;
+    gap:20px;
+  }
+  .navbar-left{
+    gap:25px;
+  }
+  .navbar a{font-size:18px;} 
+  #logoutBtn{
+    padding:6px 12px;
+    font-size:12px;
+  }
+  body{padding-top:125px;} 
+  #nowPlaying { padding:8px 15px; gap:8px; } 
+  .visualizer { height:22px; gap:2px; } 
+  .visualizer span { width:3px; } 
+  @keyframes wave { 0%, 100% { height:6px; } 50% { height:20px; } } 
+  #nowPlayingTitle { font-size:14px; } 
+  .playControls { gap:6px; } 
+  .playControls button { width:32px; height:32px; font-size:13px; border:1.5px solid #fff; } 
+}
+#musicList { display:flex; gap:15px; padding:20px 40px; overflow-x:auto; overflow-y:hidden; min-height:200px; scrollbar-width:thin; }
+#musicList div { background:#fff; padding:15px; border-radius:8px; display:flex; flex-direction:column; gap:6px; position:relative; min-width:220px; max-width:220px; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,.1); transition:.2s; }
+#musicList div:hover { box-shadow:0 4px 12px rgba(0,0,0,.15); transform:translateY(-2px); }
+#musicList audio { width:100%; margin:8px 0; border-radius:4px; }
+#musicList strong { font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.deleteBtn { position:absolute; top:8px; right:8px; background:red; color:#fff; border:none; border-radius:4px; cursor:pointer; padding:4px 8px; font-size:12px; transition:.2s; }
+.deleteBtn:hover { background:darkred; }
+#addMusicBtn { position:fixed; bottom:20px; right:20px; background:#d94c6f; color:#fff; border:none; border-radius:50%; width:60px; height:60px; font-size:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,.25);}
+.hidden { display:none !important; }
+.resumeBadge { position:absolute; top:5px; left:5px; background:#0077b6; color:#fff; font-size:11px; padding:2px 6px; border-radius:12px; }
+</style>
 </head>
 <body>
-  <div class="navbar">
-    <a href="notes.html"><i class="fas fa-sticky-note"></i> Notes</a>
-    <a href="music.html" class="active"><i class="fas fa-music"></i> Music</a>
-    <a href="gallery.html"><i class="fas fa-images"></i> Gallery</a>
-    <a href="letters.html"><i class="fas fa-envelope"></i> Letters</a>
+<nav class="navbar">
+  <div class="navbar-left">
+    <a href="notes.html"><i class="fas fa-sticky-note"></i><span class="desk_only">Notes</span></a>
+    <a href="music.html"><i class="fas fa-music"></i><span class="desk_only">Music</span></a>
+    <a href="gallery.html"><i class="fas fa-image"></i><span class="desk_only">Gallery</span></a>
+    <a href="letters.html"><i class="fas fa-envelope-open-text"></i><span class="desk_only">Letters</span></a>
   </div>
-
-  <div class="container">
-    <h1>🎵 Music Player</h1>
-
-    <button id="uploadMusicBtn">
-      <i class="fas fa-upload"></i> Upload Music
-    </button>
-
-    <ul id="musicList"></ul>
+  <div class="navbar-right">
+    <button id="logoutBtn" title="Logout"><i class="fas fa-sign-out-alt"></i><span class="desk_only">Logout</span></button>
   </div>
+</nav>
 
-  <input type="file" id="musicFile" accept="audio/*" />
+<div id="nowPlaying">
+  <div class="visualizer">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+  <div id="nowPlayingTitle">Nothing playing</div>
+  <div class="playControls">
+    <button id="prevBtn" title="Previous"><i class="fas fa-backward"></i></button>
+    <button id="playPauseBtn" title="Play/Pause"><i class="fas fa-play"></i></button>
+    <button id="nextBtn" title="Next"><i class="fas fa-forward"></i></button>
+  </div>
+</div>
 
-  <script type="module">
-    import { auth } from './supabase-integration.js';
-    const checkAuth = async () => {
-      try {
-        const user = await auth.getUser();
-        if (!user) {
-          console.log('No user, redirecting to login');
-          window.location.href = 'index.html';
-        } else {
-          console.log('User authenticated:', user.email);
-        }
-      } catch (e) {
-        console.error('Auth check error:', e);
-        // Wait a bit and retry once
-        setTimeout(async () => {
-          try {
-            const user = await auth.getUser();
-            if (!user) window.location.href = 'index.html';
-          } catch (e2) {
-            console.error('Auth retry failed:', e2);
-            window.location.href = 'index.html';
-          }
-        }, 500);
-      }
-    };
-    // Wait for DOM to be ready, then check
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', checkAuth);
+<h2 style="text-align:center;">My Music 🎵</h2>
+<div id="musicList"></div>
+
+<button id="addMusicBtn" title="Add music">+</button>
+<input type="file" id="musicFile" accept="audio/*" multiple class="hidden" />
+
+<script type="module">
+import { auth, supabase } from './supabase-integration.js';
+
+const nowPlaying = document.getElementById("nowPlaying");
+const nowPlayingTitle = document.getElementById("nowPlayingTitle");
+const prevBtn = document.getElementById("prevBtn");
+const playPauseBtn = document.getElementById("playPauseBtn");
+const nextBtn = document.getElementById("nextBtn");
+const musicList = document.getElementById("musicList");
+const addMusicBtn = document.getElementById("addMusicBtn");
+const fileInput = document.getElementById("musicFile");
+
+let currentAudio = null;
+
+const LAST_TRACK_URL_KEY = "music_last_track_url";
+const LAST_TIME_KEY = "music_last_track_time";
+
+// Auth check
+const checkAuth = async () => {
+  try {
+    const user = await auth.getUser();
+    if (!user) {
+      console.log('No user, redirecting to login');
+      window.location.href = 'index.html';
     } else {
-      checkAuth();
+      console.log('User authenticated:', user.email);
+      loadMusicList();
     }
-  </script>
+  } catch (e) {
+    console.error('Auth check error:', e);
+    setTimeout(checkAuth, 500);
+  }
+};
 
-  <script type="module" src="performance-core.js"></script>
-  <script type="module" src="music-supabase.js"></script>
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', checkAuth);
+} else {
+  checkAuth();
+}
 
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker-optimized.js').catch(e => console.log('SW error:', e));
+// Logout button handler
+const logoutBtn = document.getElementById('logoutBtn');
+logoutBtn?.addEventListener('click', async () => {
+  try {
+    await auth.logout();
+    window.location.href = 'index.html';
+  } catch (e) {
+    console.error('Logout error:', e);
+    alert('Logout failed: ' + e.message);
+  }
+});
+
+// Navigation controls
+prevBtn.addEventListener("click", () => {
+  if (currentAudio) {
+    const allAudios = Array.from(document.querySelectorAll("#musicList audio"));
+    const currentIndex = allAudios.indexOf(currentAudio);
+    const prev = allAudios[currentIndex - 1];
+    if (prev) {
+      currentAudio.pause();
+      prev.play().catch(()=>{});
     }
-  </script>
+  }
+});
+
+playPauseBtn.addEventListener("click", () => {
+  if (currentAudio) {
+    if (currentAudio.paused) {
+      currentAudio.play();
+    } else {
+      currentAudio.pause();
+    }
+  }
+});
+
+nextBtn.addEventListener("click", () => {
+  if (currentAudio) {
+    const allAudios = Array.from(document.querySelectorAll("#musicList audio"));
+    const currentIndex = allAudios.indexOf(currentAudio);
+    const next = allAudios[currentIndex + 1];
+    if (next) {
+      currentAudio.pause();
+      next.play().catch(()=>{});
+    }
+  }
+});
+
+// File upload
+addMusicBtn.addEventListener("click", () => fileInput.click());
+
+// Add track to DOM without reload
+function addTrackToDom(track) {
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `
+    <strong>${track.title}</strong>
+    <audio controls preload="auto" crossorigin="anonymous" playsinline src="${track.url}"></audio>
+    <button class="deleteBtn">Delete</button>
+  `;
+  
+  const audioEl = wrap.querySelector("audio");
+  
+  audioEl.addEventListener("play", () => {
+    document.querySelectorAll("#musicList audio").forEach(a => {
+      if (a !== audioEl && !a.paused) a.pause();
+    });
+    currentAudio = audioEl;
+    localStorage.setItem('music_last_track_url', audioEl.src);
+    localStorage.setItem("music_last_track_title", track.title);
+    localStorage.setItem("music_is_playing", "true");
+    localStorage.setItem("music_last_track_time", "0");
+    localStorage.setItem('music_playlist_updated', String(Date.now()));
+    
+    // Broadcast to other pages
+    if ('BroadcastChannel' in window) {
+      const channel = new BroadcastChannel('music_sync');
+      channel.postMessage({
+        type: 'STATE_UPDATE',
+        url: audioEl.src,
+        title: track.title,
+        isPlaying: true,
+        currentTime: 0
+      });
+    }
+    
+    nowPlaying.classList.add("active");
+    nowPlayingTitle.textContent = "🎵 " + track.title;
+    playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+  });
+
+  audioEl.addEventListener("pause", () => {
+    localStorage.setItem("music_is_playing", "false");
+    playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+  });
+
+  let lastTimeSave = 0;
+  audioEl.addEventListener("timeupdate", () => {
+    if (audioEl !== currentAudio || audioEl.paused) return;
+    const now = Date.now();
+    if (now - lastTimeSave > 2000) {
+      lastTimeSave = now;
+      localStorage.setItem('music_last_track_time', String(audioEl.currentTime));
+    }
+  });
+
+  audioEl.addEventListener("ended", () => {
+    const allAudios = Array.from(musicList.querySelectorAll("audio"));
+    const currentIndex = allAudios.indexOf(audioEl);
+    const next = allAudios[currentIndex + 1];
+    if (next) next.play().catch(()=>{});
+  });
+
+  wrap.querySelector(".deleteBtn").addEventListener("click", async () => {
+    try {
+      await supabase.from('music_tracks').delete().eq('id', track.id);
+      wrap.remove();
+    } catch (e) {
+      console.error('Delete error:', e);
+      alert('Delete failed: ' + e.message);
+    }
+  });
+
+  musicList.insertBefore(wrap, musicList.firstChild);
+}
+
+fileInput.addEventListener("change", async e => {
+  const files = Array.from(e.target.files || []);
+  if (!files.length) return;
+
+  addMusicBtn.disabled = true;
+  addMusicBtn.textContent = '⏳ ' + files.length;
+
+  try {
+    const user = await auth.getUser();
+    
+    if (!user || !user.id) {
+      alert('User not authenticated. Please log in again.');
+      window.location.href = 'index.html';
+      return;
+    }
+
+    // Upload ALL files in PARALLEL - not sequential
+    const uploadPromises = files.map(async (f) => {
+      try {
+        const title = f.name.replace(/\.[^.]+$/, "");
+        console.log(`Uploading: ${title}`);
+        
+        // FLAT path - no folder per file (was: ${Math.random()}/${f.name})
+        const path = `music_${Date.now()}_${Math.random().toString(36).substr(2, 5)}_${f.name}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('music-files')
+          .upload(path, f);
+        
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('music-files')
+          .getPublicUrl(path);
+        
+        // Save to database
+        const { data: insertData, error: dbError } = await supabase.from('music_tracks').insert({
+          user_id: user.id,
+          title,
+          url: publicUrl,
+          created_at: new Date().toISOString()
+        }).select();
+        
+        if (dbError) {
+          console.error('Database error details:', dbError);
+          if (dbError.code === '23503') {
+            throw new Error('Database error: User profile not found. Please contact support.');
+          }
+          throw dbError;
+        }
+        
+        // Add to DOM immediately without reload
+        if (insertData && insertData[0]) {
+          addTrackToDom(insertData[0]);
+        }
+        
+        console.log(`✓ Uploaded: ${title}`);
+        return { success: true, title };
+      } catch(err){ 
+        console.error("Upload failed:", err);
+        return { success: false, title: f.name, error: err.message };
+      }
+    });
+
+    // Wait for ALL uploads to complete in parallel
+    const results = await Promise.all(uploadPromises);
+    
+    // Show summary
+    const succeeded = results.filter(r => r.success).length;
+    const failed = results.filter(r => !r.success).length;
+    
+    if (failed > 0) {
+      alert(`✓ ${succeeded} uploaded\n✗ ${failed} failed`);
+    } else {
+      console.log(`✓ All ${succeeded} files uploaded successfully!`);
+    }
+  } catch(err) {
+    console.error("Upload batch error:", err);
+    alert(`Upload error: ${err.message}`);
+  } finally {
+    addMusicBtn.disabled = false;
+    addMusicBtn.innerHTML = '<i class="fas fa-plus"></i>';
+    fileInput.value = "";
+  }
+});
+
+async function loadMusicList() {
+  try {
+    const user = await auth.getUser();
+    if (!user) {
+      window.location.href = 'index.html';
+      return;
+    }
+    
+    // Clear list before loading
+    musicList.innerHTML = '';
+    
+    const { data, error } = await supabase.from('music_tracks')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    if (!data || data.length === 0) {
+      musicList.innerHTML = '<div style="text-align:center;padding:20px;color:#999;">No music yet. Click + to upload!</div>';
+      return;
+    }
+    
+    // Pre-cache playlist for fast access on other pages
+    const playlistForCache = data.map(t => ({
+      title: t.title,
+      url: t.url,
+      id: t.id
+    }));
+    localStorage.setItem('music_playlist', JSON.stringify(playlistForCache));
+    localStorage.setItem('music_playlist_updated', String(Date.now()));
+
+    // FETCH AND DISPLAY SEQUENTIALLY for better UX
+    // Display each item immediately as it loads instead of waiting for all
+    for (const track of data) {
+      // Create and add to DOM immediately
+      addTrackToDom(track);
+      
+      // Small delay to allow DOM to render before next fetch
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    
+    // Resume last track if any
+    const lastUrl = localStorage.getItem(LAST_TRACK_URL_KEY);
+    if (lastUrl) {
+      const audioEls = Array.from(musicList.querySelectorAll("audio"));
+      const target = audioEls.find(a => a.src === lastUrl);
+      if (target) {
+        currentAudio = target;
+        const lastTime = parseFloat(localStorage.getItem(LAST_TIME_KEY) || "0");
+        if (lastTime > 0) {
+          target.addEventListener('loadedmetadata', () => {
+            target.currentTime = Math.min(lastTime, target.duration);
+          }, { once: true });
+        }
+        // Auto play if was playing before
+        if (localStorage.getItem('music_is_playing') === 'true') {
+          target.play().catch(()=>{});
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Load error:', e);
+  }
+}
+
+function renderMusicList(tracks) {
+  const lastUrl = localStorage.getItem(LAST_TRACK_URL_KEY);
+  const lastTime = parseFloat(localStorage.getItem(LAST_TIME_KEY) || "0");
+
+  musicList.innerHTML = "";
+  const audioEls = [];
+
+  if (tracks.length === 0) {
+    musicList.innerHTML = '<div style="text-align:center;padding:20px;color:#999;">No music yet. Click + to upload!</div>';
+    return;
+  }
+
+  // Pre-cache playlist for fast access on other pages
+  const playlistForCache = tracks.map(t => ({
+    title: t.title,
+    url: t.url,
+    id: t.id
+  }));
+  localStorage.setItem('music_playlist', JSON.stringify(playlistForCache));
+  localStorage.setItem('music_playlist_updated', String(Date.now()));
+
+  tracks.forEach(track => {
+    const wrap = document.createElement("div");
+    wrap.innerHTML = `
+      <strong>${track.title}</strong>
+      <audio controls preload="auto" crossorigin="anonymous" playsinline src="${track.url}"></audio>
+      <button class="deleteBtn">Delete</button>
+    `;
+    
+    const audioEl = wrap.querySelector("audio");
+    
+    // Optimize URL - use direct Supabase signed URL if available
+    audioEl.crossOrigin = 'anonymous';
+    
+    // Pause others & update now playing
+    audioEl.addEventListener("play", () => {
+      document.querySelectorAll("#musicList audio").forEach(a => {
+        if (a !== audioEl && !a.paused) a.pause();
+      });
+      currentAudio = audioEl;
+      localStorage.setItem(LAST_TRACK_URL_KEY, audioEl.src);
+      localStorage.setItem("music_last_track_title", track.title);
+      localStorage.setItem("music_is_playing", "true");
+      localStorage.setItem("music_last_track_time", "0");
+      
+      // Broadcast to other pages
+      if ('BroadcastChannel' in window) {
+        const channel = new BroadcastChannel('music_sync');
+        channel.postMessage({
+          type: 'STATE_UPDATE',
+          url: audioEl.src,
+          title: track.title,
+          isPlaying: true,
+          currentTime: 0
+        });
+      }
+      
+      nowPlaying.classList.add("active");
+      nowPlayingTitle.textContent = "🎵 " + track.title;
+      playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+    });
+
+    audioEl.addEventListener("pause", () => {
+      localStorage.setItem("music_is_playing", "false");
+      playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+    });
+
+    // Save progress
+    audioEl.addEventListener("timeupdate", () => {
+      if (audioEl !== currentAudio || audioEl.paused) return;
+      const now = Date.now();
+      const lastSave = parseInt(localStorage.getItem('music_last_save') || '0');
+      // Save every 2 seconds to avoid excessive writes
+      if (now - lastSave > 2000) {
+        localStorage.setItem(LAST_TIME_KEY, String(audioEl.currentTime));
+        localStorage.setItem('music_last_save', String(now));
+      }
+    });
+
+    // Auto next
+    audioEl.addEventListener("ended", () => {
+      const allAudios = Array.from(musicList.querySelectorAll("audio"));
+      const currentIndex = allAudios.indexOf(audioEl);
+      const next = allAudios[currentIndex + 1];
+      if (next) next.play().catch(()=>{});
+    });
+
+    // Delete
+    wrap.querySelector(".deleteBtn").addEventListener("click", async () => {
+      try {
+        await supabase.from('music_tracks').delete().eq('id', track.id);
+        loadMusicList();
+      } catch (e) {
+        console.error('Delete error:', e);
+        alert('Delete failed: ' + e.message);
+      }
+    });
+
+    musicList.appendChild(wrap);
+    audioEls.push(audioEl);
+  });
+
+  // Resume last track with optimized loading
+  if (lastUrl && audioEls.length) {
+    const target = audioEls.find(a => a.src === lastUrl);
+    if (target) {
+      currentAudio = target;
+      if (lastTime > 0) {
+        target.addEventListener('loadedmetadata', () => {
+          target.currentTime = Math.min(lastTime, target.duration);
+        }, { once: true });
+      }
+      nowPlaying.classList.add("active");
+      const trackTitle = tracks.find(t => t.url === lastUrl)?.title || "Untitled";
+      nowPlayingTitle.textContent = "🎵 " + trackTitle;
+      playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+      target.play().catch(()=>{});
+    }
+  }
+}
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker-optimized.js').catch(e => console.log('SW error:', e));
+}
+</script>
+<script src="shared-music-player.js" defer></script>
 </body>
 </html>

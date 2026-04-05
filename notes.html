@@ -1,88 +1,435 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Notes</title>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notes</title>
   <meta name="theme-color" content="#0077b6">
-  <link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; }
-    body { font-family: 'Poppins', sans-serif; padding: 20px; background: #f5f5f5; margin: 0; }
-    h1 { color: #0077b6; text-align: center; }
-    .navbar { background: #0077b6; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
-    .navbar a { color: white; text-decoration: none; padding: 8px 16px; background: rgba(255,255,255,0.2); border-radius: 4px; transition: 0.2s; }
-    .navbar a:hover { background: rgba(255,255,255,0.3); }
-    .navbar a.active { background: #d94c6f; }
-    .noteItem { background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 800px; margin-left: auto; margin-right: auto; }
-    .noteHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .noteTitle { font-size: 18px; font-weight: 600; border: none; padding: 5px; flex-grow: 1; border-bottom: 2px solid transparent; transition: border-color 0.3s; }
-    .noteTitle:focus { outline: none; border-bottom: 2px solid #007bff; }
-    .noteContent { width: 100%; height: 150px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical; }
-    .noteTimestamp { font-size: 12px; color: #999; margin-top: 10px; }
-    .deleteNoteBtn { background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
-    #addNoteBtn { padding: 12px 20px; background: #28a745; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto; }
-    #addNoteBtn:hover { background: #218838; }
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Mali:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- Aggressive preload for music continuity -->
+<link rel="preload" href="shared-music-player.js" as="script">
+<link rel="preload" href="supabase-integration.js" as="script">
+<link rel="prefetch" href="music.html">
+<link rel="prefetch" href="gallery.html">
+<link rel="prefetch" href="letters.html">
+<link rel="preconnect" href="https://fvpedrabqhcpiifjcfik.supabase.co">
+ <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: #f8f9fa;
+    }
+
+    .navbar {
+      font-family: "Mali";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: #0077b6;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 30px;
+      z-index: 1000;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      box-sizing: border-box;
+    }
+    .navbar-left {
+      display: flex;
+      gap: 40px;
+      flex: 1;
+      justify-content: center;
+    }
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    #logoutBtn {
+      background: #ff6b6b;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.3s;
+      font-family: 'Mali', sans-serif;
+      font-size: 14px;
+    }
+    #logoutBtn:hover {
+      background: #ff5252;
+      transform: scale(1.05);
+    }
+    .navbar a {
+      background-color: #d94c6f;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      transition: 0.2s;
+      font-size: 16px;
+    }
+    .navbar a:hover {
+      background: #005f87;
+    }
+    .desk_only { display: inline; }
+    @media (max-width: 768px) {
+      .desk_only { display: none; }
+      .navbar { 
+        padding: 15px 20px;
+        gap: 20px;
+      }
+      .navbar-left {
+        gap: 25px;
+      }
+      .navbar a { font-size: 18px; padding: 6px 10px; }
+      #logoutBtn {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+    }
+
+    #nowPlaying { position:fixed; top:70px; left:0; width:100%; background:linear-gradient(135deg,#d94c6f,#0077b6); padding:12px 25px; z-index:999; display:none; align-items:center; gap:12px; box-shadow:0 2px 8px rgba(0,0,0,.2); color:#fff; box-sizing:border-box; }
+    #nowPlaying.active { display:flex; }
+    .visualizer { display:flex; gap:3px; align-items:flex-end; height:30px; flex-shrink:0; }
+    .visualizer span { width:4px; background:#fff; border-radius:2px; animation:wave 0.8s ease-in-out infinite; }
+    @keyframes wave { 0%, 100% { height:8px; } 50% { height:28px; } }
+    #nowPlayingTitle { flex:1; font-weight:600; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+    .playControls { display:flex; gap:8px; flex-shrink:0; }
+    .playControls button { background:rgba(255,255,255,0.2); border:2px solid #fff; color:#fff; width:38px; height:38px; border-radius:50%; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center; transition:.2s; flex-shrink:0; }
+
+    .main-container {
+      flex: 1;
+      display: flex;
+      margin-top: 140px;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 250px;
+      background: pink;
+      color: black;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+    .sidebar h2 {
+      margin: 0 0 10px 0;
+      text-align: center;
+    }
+    .note-item {
+      padding: 10px;
+      margin: 5px 0;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .note-item:hover { background: #eaeaea; }
+    .note-item i { cursor: pointer; }
+
+    .editor {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      padding: 10px;
+      box-sizing: border-box;
+      position: relative;
+      background: white;
+    }
+    .editor textarea {
+      flex: 1;
+      margin-top: 10px;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+      resize: none;
+      font-size: 16px;
+      font-family: "Poppins", sans-serif;
+      background: #f0f4f8;
+    }
+    .editor .title {
+      text-align: center;
+      padding: 5px;
+      margin-bottom: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      outline: none;
+      width: 100%;
+      background: transparent;
+    }
+    .save-btn {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      background: #d94c6f;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #closeBtn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #ff4d4d;
+      border: none;
+      color: white;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .add-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #d94c6f;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    @media(max-width:768px){
+      .sidebar { width: 100%; position: absolute; left: 0; top: 135px; }
+      .editor { width: 100%; height: 100%; position: absolute; top: 135px; left: 0; background: white; }
+      body { padding-top: 135px; }
+    }
   </style>
 </head>
 <body>
-  <div class="navbar">
-    <a href="notes.html" class="active"><i class="fas fa-sticky-note"></i> Notes</a>
-    <a href="music.html"><i class="fas fa-music"></i> Music</a>
-    <a href="gallery.html"><i class="fas fa-images"></i> Gallery</a>
-    <a href="letters.html"><i class="fas fa-envelope"></i> Letters</a>
+  <nav class="navbar">
+    <div class="navbar-left">
+      <a href="notes.html"><i class="fas fa-sticky-note"></i><span class="desk_only">Notes</span></a>
+      <a href="music.html"><i class="fas fa-music"></i><span class="desk_only">Music</span></a>
+      <a href="gallery.html"><i class="fas fa-image"></i><span class="desk_only">Gallery</span></a>
+      <a href="letters.html"><i class="fas fa-envelope-open-text"></i><span class="desk_only">Letters</span></a>
+    </div>
+    <div class="navbar-right">
+      <button id="logoutBtn" title="Logout"><i class="fas fa-sign-out-alt"></i><span class="desk_only">Logout</span></button>
+    </div>
+  </nav>
+
+  <div id="nowPlaying">
+    <div class="visualizer">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div id="nowPlayingTitle">Nothing playing</div>
+    <div class="playControls">
+      <button id="playPauseBtn" title="Play/Pause"><i class="fas fa-play"></i></button>
+    </div>
   </div>
 
-  <h1>📝 Notes</h1>
+  <div class="main-container">
+    <div class="sidebar">
+      <h2>Notes</h2>
+      <div id="notesList"></div>
+    </div>
 
-  <button id="addNoteBtn">
-    <i class="fas fa-plus"></i> New Note
-  </button>
+    <div class="editor">
+      <button id="closeBtn">×</button>
+      <button class="save-btn">Save</button>
+      <input class="title" id="noteTitle" placeholder="Note Title">
+      <textarea id="noteContent" placeholder="Write your note here..."></textarea>
+    </div>
+  </div>
 
-  <ul id="notesList" style="list-style: none; padding: 0; max-width: 800px; margin: 0 auto;"></ul>
+  <button class="add-btn"><i class="fas fa-plus"></i></button>
 
   <script type="module">
-    import { auth } from './supabase-integration.js';
+    import { auth, supabase } from './supabase-integration.js';
+
+    const notesList = document.getElementById("notesList");
+    const editor = document.querySelector(".editor");
+    const addBtn = document.querySelector(".add-btn");
+    const saveBtn = document.querySelector(".save-btn");
+    const noteTitle = document.getElementById("noteTitle");
+    const noteContent = document.getElementById("noteContent");
+    const closeBtn = document.getElementById("closeBtn");
+
+    let currentNoteId = null;
+
     const checkAuth = async () => {
       try {
         const user = await auth.getUser();
         if (!user) {
-          console.log('No user, redirecting to login');
           window.location.href = 'index.html';
         } else {
-          console.log('User authenticated:', user.email);
+          loadNotes();
         }
       } catch (e) {
-        console.error('Auth check error:', e);
-        // Wait a bit and retry once
-        setTimeout(async () => {
-          try {
-            const user = await auth.getUser();
-            if (!user) window.location.href = 'index.html';
-          } catch (e2) {
-            console.error('Auth retry failed:', e2);
-            window.location.href = 'index.html';
-          }
-        }, 500);
+        console.error('Auth error:', e);
+        setTimeout(checkAuth, 500);
       }
     };
-    // Wait for DOM to be ready, then check
+
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', checkAuth);
     } else {
       checkAuth();
     }
-  </script>
 
-  <script type="module" src="performance-core.js"></script>
-  <script type="module" src="notes-supabase.js"></script>
+    // Logout button handler
+    const logoutBtn = document.getElementById('logoutBtn');
+    logoutBtn?.addEventListener('click', async () => {
+      try {
+        await auth.logout();
+        window.location.href = 'index.html';
+      } catch (e) {
+        console.error('Logout error:', e);
+        alert('Logout failed: ' + e.message);
+      }
+    });
+
+    addBtn.addEventListener("click", () => {
+      currentNoteId = null;
+      noteTitle.value = "";
+      noteContent.value = "";
+      editor.style.display = "flex";
+      if(window.innerWidth < 768) document.querySelector(".sidebar").style.display = "none";
+    });
+
+    closeBtn.addEventListener("click", () => {
+      editor.style.display = "none";
+      if(window.innerWidth < 768) document.querySelector(".sidebar").style.display = "block";
+    });
+
+    saveBtn.addEventListener("click", async () => {
+      const title = noteTitle.value.trim();
+      const content = noteContent.value.trim();
+      if(!title && !content) {
+        alert('Please enter a title or content');
+        return;
+      }
+
+      try {
+        saveBtn.disabled = true;
+        const user = await auth.getUser();
+        
+        if (!user || !user.id) {
+          alert('User not authenticated. Please log in again.');
+          window.location.href = 'index.html';
+          return;
+        }
+        
+        if (currentNoteId) {
+          const { error } = await supabase.from('notes').update({title, content}).eq('id', currentNoteId);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from('notes').insert({
+            user_id: user.id,
+            title,
+            content,
+            created_at: new Date().toISOString()
+          });
+          
+          if (error) {
+            console.error('Database error details:', error);
+            if (error.code === '23503') {
+              throw new Error('Database error: User profile not found. Please contact support.');
+            }
+            throw error;
+          }
+        }
+        editor.style.display = "none";
+        if(window.innerWidth < 768) document.querySelector(".sidebar").style.display = "block";
+        loadNotes();
+      } catch (e) {
+        console.error('Save error:', e);
+        alert('Save failed: ' + e.message);
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+
+    async function loadNotes(){
+      try {
+        const user = await auth.getUser();
+        const { data, error } = await supabase.from('notes')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        notesList.innerHTML = "";
+        if (!data || data.length === 0) {
+          notesList.innerHTML = '<div style="padding:20px;color:#999;text-align:center;">No notes yet. Click + to create!</div>';
+        } else {
+          data.forEach(d => {
+            const div = document.createElement("div");
+            div.className = "note-item";
+            div.innerHTML = `
+              <span>${d.title || "Untitled"}</span>
+              <i class="fas fa-times"></i>
+            `;
+            div.addEventListener("click", e => {
+              if(e.target.tagName === "I") return;
+              currentNoteId = d.id;
+              noteTitle.value = d.title || "";
+              noteContent.value = d.content || "";
+              editor.style.display = "flex";
+              if(window.innerWidth < 768) document.querySelector(".sidebar").style.display = "none";
+            });
+            div.querySelector("i").addEventListener("click", async e => {
+              try {
+                await supabase.from('notes').delete().eq('id', d.id);
+                loadNotes();
+              } catch (e) {
+                console.error('Delete error:', e);
+                alert('Delete failed: ' + e.message);
+              }
+            });
+            notesList.appendChild(div);
+          });
+        }
+      } catch (e) {
+        console.error('Load error:', e);
+        alert('Failed to load notes: ' + e.message);
+      }
+    }
+  </script>
 
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker-optimized.js').catch(e => console.log('SW error:', e));
     }
   </script>
+  <script src="shared-music-player.js" defer></script>
 </body>
 </html>
