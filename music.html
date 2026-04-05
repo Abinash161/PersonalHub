@@ -312,7 +312,7 @@ fileInput.addEventListener("change", async e => {
         const title = f.name.replace(/\.[^.]+$/, "");
         console.log(`Uploading: ${title}`);
         
-        // FLAT path - no folder per file (was: ${Math.random()}/${f.name})
+        // Upload file
         const path = `music_${Date.now()}_${Math.random().toString(36).substr(2, 5)}_${f.name}`;
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('music-files')
@@ -320,16 +320,12 @@ fileInput.addEventListener("change", async e => {
         
         if (uploadError) throw uploadError;
 
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from('music-files')
-          .getPublicUrl(path);
-        
-        // Save to database
+        // Store JUST the file path in database (not the public URL)
+        // Signed URLs will be generated on-demand for better security
         const { data: insertData, error: dbError } = await supabase.from('music_tracks').insert({
           user_id: user.id,
           title,
-          url: publicUrl,
+          file_path: path,
           created_at: new Date().toISOString()
         }).select();
         
@@ -404,20 +400,49 @@ async function loadMusicList() {
       return;
     }
     
+    // Generate signed URLs for each track (valid for 24 hours)
+    const tracksWithUrls = await Promise.all(
+      data.map(async (track) => {
+        try {
+          // Generate signed URL from file path
+          const { data: signedData, error: signedError } = await supabase.storage
+            .from('music-files')
+            .createSignedUrl(track.file_path, 86400); // 24 hours
+          
+          if (signedError) {
+            console.error(`Signed URL error for ${track.title}:`, signedError);
+            return { ...track, url: null };
+          }
+          
+          return { ...track, url: signedData.signedUrl };
+        } catch (e) {
+          console.error(`Failed to generate signed URL for ${track.title}:`, e);
+          return { ...track, url: null };
+        }
+      })
+    );
+    
     // Pre-cache playlist for fast access on other pages
-    const playlistForCache = data.map(t => ({
-      title: t.title,
-      url: t.url,
-      id: t.id
-    }));
+    const playlistForCache = tracksWithUrls
+      .filter(t => t.url) // Only include tracks with valid signed URLs
+      .map(t => ({
+        title: t.title,
+        url: t.url,
+        id: t.id
+      }));
     localStorage.setItem('music_playlist', JSON.stringify(playlistForCache));
     localStorage.setItem('music_playlist_updated', String(Date.now()));
 
-    // FETCH AND DISPLAY SEQUENTIALLY for better UX
-    // Display each item immediately as it loads instead of waiting for all
-    for (const track of data) {
-      // Create and add to DOM immediately
-      addTrackToDom(track);
+    // Display each track with its signed URL
+    for (const track of tracksWithUrls) {
+      if (track.url) {
+        addTrackToDom(track);
+      } else {
+        // Show error for tracks that failed to generate signed URL
+        const wrap = document.createElement("div");
+        wrap.innerHTML = `<strong style="color:#ccc;">${track.title}</strong> <span style="color:#999;">(Failed to load)</span>`;
+        musicList.insertBefore(wrap, musicList.firstChild);
+      }
       
       // Small delay to allow DOM to render before next fetch
       await new Promise(resolve => setTimeout(resolve, 50));

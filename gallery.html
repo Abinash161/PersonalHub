@@ -414,16 +414,14 @@ imageFile.addEventListener("change", async (e) => {
       
       if (uploadError) throw uploadError;
       
-      // Get public URL and cache it locally for instant access
-      const { data: { publicUrl } } = supabase.storage.from('gallery-images').getPublicUrl(path);
-      localStorage.setItem(`img_cache_${path}`, publicUrl);
-      
+      // Store just the file path in database (not the public URL)
+      // Signed URLs will be generated on-demand for better security
       const user = await auth.getUser();
       const { error: dbError } = await supabase.from('gallery_images').insert({
         folder_id: currentFolderId,
         user_id: user.id,
         name: file.name,
-        url: publicUrl,
+        file_path: path,
         created_at: new Date().toISOString()
       });
       
