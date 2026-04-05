@@ -53,12 +53,32 @@
     const checkAuth = async () => {
       try {
         const user = await auth.getUser();
-        if (!user) window.location.href = 'index.html';
+        if (!user) {
+          console.log('No user, redirecting to login');
+          window.location.href = 'index.html';
+        } else {
+          console.log('User authenticated:', user.email);
+        }
       } catch (e) {
-        window.location.href = 'index.html';
+        console.error('Auth check error:', e);
+        // Wait a bit and retry once
+        setTimeout(async () => {
+          try {
+            const user = await auth.getUser();
+            if (!user) window.location.href = 'index.html';
+          } catch (e2) {
+            console.error('Auth retry failed:', e2);
+            window.location.href = 'index.html';
+          }
+        }, 500);
       }
     };
-    checkAuth();
+    // Wait for DOM to be ready, then check
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', checkAuth);
+    } else {
+      checkAuth();
+    }
   </script>
 
   <script type="module" src="performance-core.js"></script>
