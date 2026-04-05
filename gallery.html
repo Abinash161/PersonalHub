@@ -147,10 +147,12 @@ body { font-family:'Poppins',sans-serif; background:pink; padding-top:130px; }
 
 <nav class="navbar">
   <div class="navbar-left">
-    <a href="notes.html"><i class="fas fa-sticky-note"></i><span class="desk_only">Notes</span></a>
-    <a href="music.html"><i class="fas fa-music"></i><span class="desk_only">Music</span></a>
-    <a href="gallery.html"><i class="fas fa-image"></i><span class="desk_only">Gallery</span></a>
-    <a href="letters.html"><i class="fas fa-envelope-open-text"></i><span class="desk_only">Letters</span></a>
+    <div style="display: flex; gap: 40px; flex: 1; justify-content: center;">
+      <span onclick="window.location.href='notes.html'" style="cursor: pointer;"><i class="fas fa-sticky-note"></i><span class="desk_only">Notes</span></span>
+      <span onclick="window.location.href='music.html'" style="cursor: pointer;"><i class="fas fa-music"></i><span class="desk_only">Music</span></span>
+      <span onclick="window.location.href='gallery.html'" style="cursor: pointer;"><i class="fas fa-image"></i><span class="desk_only">Gallery</span></span>
+      <span onclick="window.location.href='letters.html'" style="cursor: pointer;"><i class="fas fa-envelope-open-text"></i><span class="desk_only">Letters</span></span>
+    </div>
   </div>
   <div class="navbar-right">
     <button id="logoutBtn" title="Logout"><i class="fas fa-sign-out-alt"></i><span class="desk_only">Logout</span></button>
