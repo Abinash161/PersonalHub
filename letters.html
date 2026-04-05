@@ -105,6 +105,8 @@ body {
 #nowPlayingTitle { flex:1; font-weight:600; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
 .playControls { display:flex; gap:8px; flex-shrink:0; }
 .playControls button { background:rgba(255,255,255,0.2); border:2px solid #fff; color:#fff; width:38px; height:38px; border-radius:50%; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center; transition:.2s; flex-shrink:0; }
+.playControls button:hover { background:rgba(255,255,255,0.3); transform:scale(1.05); }
+.playControls button:active { transform:scale(0.95); }
 
 @media (max-width: 768px) {
   .desk_only {
@@ -125,6 +127,16 @@ body {
     padding: 6px 12px;
     font-size: 12px;
   }
+  header {
+    margin-top: 185px;
+  }
+  #nowPlaying { padding:8px 15px; gap:8px; }
+  .visualizer { height:22px; gap:2px; }
+  .visualizer span { width:3px; }
+  @keyframes wave { 0%, 100% { height:6px; } 50% { height:20px; } }
+  #nowPlayingTitle { font-size:14px; }
+  .playControls { gap:6px; }
+  .playControls button { width:32px; height:32px; font-size:13px; border:1.5px solid #fff; }
 }
 
 header {
@@ -292,7 +304,9 @@ header {
   </div>
   <div id="nowPlayingTitle">Nothing playing</div>
   <div class="playControls">
+    <button id="prevBtn" title="Previous"><i class="fas fa-backward"></i></button>
     <button id="playPauseBtn" title="Play/Pause"><i class="fas fa-play"></i></button>
+    <button id="nextBtn" title="Next"><i class="fas fa-forward"></i></button>
   </div>
 </div>
 <header>My Letters 💌</header>

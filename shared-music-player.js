@@ -87,7 +87,7 @@
       let lastTimeSave = 0;
       audio.addEventListener('timeupdate', () => {
         const now = Date.now();
-        if (!audio.paused && now - lastTimeSave > 2000) {
+        if (!audio.paused && now - lastTimeSave > 500) {
           lastTimeSave = now;
           localStorage.setItem('music_last_track_time', String(audio.currentTime));
         }
@@ -98,6 +98,14 @@
       // Set source and play
       audio.src = resolvedUrl;
       audio.load();
+      
+      // Restore playback position from localStorage
+      const savedTime = parseFloat(localStorage.getItem('music_last_track_time') || '0');
+      audio.addEventListener('loadedmetadata', () => {
+        if (savedTime > 0 && savedTime < audio.duration) {
+          audio.currentTime = savedTime;
+        }
+      }, { once: true });
       
       if (shouldPlay) {
         // Try to play immediately, then again when ready
@@ -193,6 +201,29 @@
     updateNowPlaying(shouldPlay);
   }
 
+  // Play previous track
+  function playPreviousTrack() {
+    const playlistJson = localStorage.getItem('music_playlist');
+    if (!playlistJson) return;
+    
+    try {
+      const playlist = JSON.parse(playlistJson);
+      const currentUrl = localStorage.getItem('music_last_track_url');
+      const currentIndex = playlist.findIndex(track => currentUrl && currentUrl.includes(track.url));
+      
+      if (currentIndex > 0) {
+        const prevTrack = playlist[currentIndex - 1];
+        localStorage.setItem('music_last_track_url', prevTrack.url);
+        localStorage.setItem('music_last_track_title', prevTrack.title);
+        localStorage.setItem('music_is_playing', 'true');
+        localStorage.setItem('music_last_track_time', '0');
+        createAndPlayAudio(prevTrack.url, prevTrack.title, true);
+      }
+    } catch (e) {
+      console.error('Error playing previous track:', e);
+    }
+  }
+
   // Setup controls event listener
   function setupControls() {
     const playPauseBtn = document.getElementById('playPauseBtn');
@@ -209,6 +240,11 @@
           updateNowPlaying();
         }
       });
+    }
+
+    const prevBtn = document.getElementById('prevBtn');
+    if (prevBtn) {
+      prevBtn.addEventListener('click', playPreviousTrack);
     }
 
     const nextBtn = document.getElementById('nextBtn');
@@ -255,6 +291,10 @@
     const channel = new BroadcastChannel('music_sync');
     channel.addEventListener('message', (e) => {
       if (e.data.type === 'STATE_UPDATE') {
+        // Update localStorage with latest state
+        if (e.data.currentTime !== undefined) {
+          localStorage.setItem('music_last_track_time', String(e.data.currentTime));
+        }
         syncFromLocalStorage();
       }
     });

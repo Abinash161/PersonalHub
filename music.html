@@ -56,7 +56,7 @@ body { font-family:'Poppins',sans-serif; padding-top:140px; background:pink; mar
     padding:6px 12px;
     font-size:12px;
   }
-  body{padding-top:125px;} 
+  body{padding-top:185px;} 
   #nowPlaying { padding:8px 15px; gap:8px; } 
   .visualizer { height:22px; gap:2px; } 
   .visualizer span { width:3px; } 
@@ -64,6 +64,11 @@ body { font-family:'Poppins',sans-serif; padding-top:140px; background:pink; mar
   #nowPlayingTitle { font-size:14px; } 
   .playControls { gap:6px; } 
   .playControls button { width:32px; height:32px; font-size:13px; border:1.5px solid #fff; } 
+  #musicList { padding:10px 15px; gap:10px; } 
+  #musicList div { padding:10px; min-width:unset; max-width:unset; } 
+  #musicList audio { width:100%; } 
+  #musicList strong { font-size:13px; } 
+  #addMusicBtn { width:50px; height:50px; font-size:25px; } 
 }
 #musicList { display:flex; flex-direction:column; gap:15px; padding:20px 40px; overflow-y:auto; overflow-x:hidden; min-height:200px; scrollbar-width:thin; }
 #musicList div { background:#fff; padding:15px; border-radius:8px; display:flex; flex-direction:column; gap:6px; position:relative; width:100%; box-shadow:0 2px 8px rgba(0,0,0,.1); transition:.2s; }
@@ -214,10 +219,15 @@ function addTrackToDom(track) {
       if (a !== audioEl && !a.paused) a.pause();
     });
     currentAudio = audioEl;
+    
+    // Only update time if starting a new track (not resuming)
+    const wasPlaying = localStorage.getItem('music_last_track_url') === audioEl.src;
     localStorage.setItem('music_last_track_url', audioEl.src);
     localStorage.setItem("music_last_track_title", track.title);
     localStorage.setItem("music_is_playing", "true");
-    localStorage.setItem("music_last_track_time", "0");
+    if (!wasPlaying) {
+      localStorage.setItem("music_last_track_time", "0");
+    }
     localStorage.setItem('music_playlist_updated', String(Date.now()));
     
     // Broadcast to other pages
@@ -228,7 +238,7 @@ function addTrackToDom(track) {
         url: audioEl.src,
         title: track.title,
         isPlaying: true,
-        currentTime: 0
+        currentTime: audioEl.currentTime
       });
     }
     
@@ -246,7 +256,8 @@ function addTrackToDom(track) {
   audioEl.addEventListener("timeupdate", () => {
     if (audioEl !== currentAudio || audioEl.paused) return;
     const now = Date.now();
-    if (now - lastTimeSave > 2000) {
+    // Save every 500ms for better sync across pages
+    if (now - lastTimeSave > 500) {
       lastTimeSave = now;
       localStorage.setItem('music_last_track_time', String(audioEl.currentTime));
     }

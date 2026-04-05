@@ -36,6 +36,7 @@ body { font-family:'Poppins',sans-serif; background:pink; padding-top:130px; }
 .playControls { display:flex; gap:8px; flex-shrink:0; }
 .playControls button { background:rgba(255,255,255,0.2); border:2px solid #fff; color:#fff; width:38px; height:38px; border-radius:50%; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center; transition:.2s; flex-shrink:0; }
 .playControls button:hover { background:rgba(255,255,255,0.3); transform:scale(1.05); }
+.playControls button:active { transform:scale(0.95); }
 @media (max-width: 768px) { 
   .desk_only { display: none; } 
   .navbar { 
@@ -50,7 +51,14 @@ body { font-family:'Poppins',sans-serif; background:pink; padding-top:130px; }
     padding: 6px 12px;
     font-size: 12px;
   }
-  body { padding-top:115px; } 
+  body { padding-top:185px; }
+  #nowPlaying { padding:8px 15px; gap:8px; }
+  .visualizer { height:22px; gap:2px; }
+  .visualizer span { width:3px; }
+  @keyframes wave { 0%, 100% { height:6px; } 50% { height:20px; } }
+  #nowPlayingTitle { font-size:14px; }
+  .playControls { gap:6px; }
+  .playControls button { width:32px; height:32px; font-size:13px; border:1.5px solid #fff; }
 }
 #foldersList { display: flex; flex-wrap: wrap; gap: 24px; padding: 20px; }
 .folderItem { background: white; border-radius: 12px; width: 120px; height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.07); cursor: pointer; position: relative; }
@@ -153,7 +161,9 @@ body { font-family:'Poppins',sans-serif; background:pink; padding-top:130px; }
   <div class="visualizer"><span></span><span></span><span></span><span></span><span></span></div>
   <div id="nowPlayingTitle">Nothing playing</div>
   <div class="playControls">
+    <button id="prevBtn" title="Previous"><i class="fas fa-backward"></i></button>
     <button id="playPauseBtn" title="Play/Pause"><i class="fas fa-play"></i></button>
+    <button id="nextBtn" title="Next"><i class="fas fa-forward"></i></button>
   </div>
 </div>
 
