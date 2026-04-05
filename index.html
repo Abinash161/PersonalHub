@@ -82,51 +82,117 @@
 </head>
 <body>
   <div class="container">
-    <h2>Login 💌</h2>
+    <h2 id="pageTitle">Login 💌</h2>
     <input type="email" id="email" placeholder="Email">
     <input type="password" id="password" placeholder="Password">
-<button id="loginBtn">Login</button>
+    <button id="loginBtn">Login</button>
     <p id="msg"></p>
+    <p style="text-align: center; margin-top: 20px; font-size: 14px;">
+      <span id="toggleText">Don't have an account? </span>
+      <a href="javascript:toggleAuth()" style="color: #007bff; cursor: pointer; text-decoration: none;">
+        <span id="toggleLink">Sign Up</span>
+      </a>
+    </p>
   </div>
 
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-  const firebaseConfig = {
-    apiKey: "AIzaSyAbancsm9ps84wLP8G5-PlqZ2qORswgtI4",
-    authDomain: "forsm-95871.firebaseapp.com",
-    projectId: "forsm-95871",
-    storageBucket: "forsm-95871.appspot.com",
-    messagingSenderId: "539969325228",
-    appId: "1:539969325228:web:69b5ce6518841ad5f67709",
-    measurementId: "G-D24WLLV69V"
-  };
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+// SUPABASE AUTHENTICATION (v2.0)
+// Replace Firebase with Supabase for better real-time performance
+
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+// Supabase client initialization
+const SUPABASE_URL = 'https://fvpedrabqhcpiifjcfik.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2cGVkcmFicWhjcGlpZmpjZmlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTIwMzksImV4cCI6MjA5MDkyODAzOX0.VHTH80WcqX4B0q4G-q_kKAS4RHyDBVONEkRMFSTPTcc';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const loginBtn = document.getElementById("loginBtn");
+const msgDiv = document.getElementById("msg");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+let isSignup = false;
+
+// Toggle login/signup mode
+const toggleButton = () => {
+  isSignup = !isSignup;
+  loginBtn.textContent = isSignup ? 'Sign Up' : 'Login';
+  document.querySelector('h2').innerHTML = isSignup ? 'Create Account 💌' : 'Login 💌';
+  document.getElementById('toggleText').textContent = isSignup ? 'Already have an account? ' : 'Don\'t have an account? ';
+  document.getElementById('toggleLink').textContent = isSignup ? 'Login' : 'Sign Up';
+};
+
+// Make it available globally for future UI enhancement
+window.toggleAuth = toggleButton;
+
+// Handle login/signup
 loginBtn.addEventListener("click", async () => {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+  msgDiv.textContent = '';
+
+  if (!email || !password) {
+    msgDiv.textContent = 'Please enter email and password';
+    msgDiv.className = 'error';
+    return;
+  }
 
   try {
-    await signInWithEmailAndPassword(auth, email, password);
-    window.location.href = "home.html"; // redirect after login
+    let result;
+    if (isSignup) {
+      // Sign up
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/home.html`
+        }
+      });
+      if (error) throw error;
+      msgDiv.textContent = 'Check your email to confirm signup!';
+      msgDiv.className = '';
+    } else {
+      // Login
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      if (error) throw error;
+      window.location.href = 'home.html';
+    }
   } catch (error) {
-    alert(error.message);
+    msgDiv.textContent = error.message || 'Authentication failed';
+    msgDiv.className = 'error';
+    console.error('Auth error:', error);
   }
 });
 
-document.querySelector('.container').style.display = 'none';
-
-onAuthStateChanged(auth, user => {
-  if (user) {
-    window.location.href = "home.html";
-  } else {
+// Check current session on page load
+(async () => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      window.location.href = 'home.html';
+    } else {
+      document.querySelector('.container').style.display = 'block';
+    }
+  } catch (e) {
     document.querySelector('.container').style.display = 'block';
   }
-});
+
+  // Listen for auth changes
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    if (session) {
+      window.location.href = 'home.html';
+    }
+  });
+
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', () => {
+    subscription?.unsubscribe();
+  });
+})();
 </script>
 <script>
 // 1) One-time kill switch: visit /index.html?reset-sw to purge old SW and caches

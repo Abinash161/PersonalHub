@@ -1,431 +1,71 @@
 <!DOCTYPE html>
-<html lang="en">
-
-<!-- Mirrored from forsm-95871.web.app/letters.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 06 Nov 2025 09:16:42 GMT -->
-<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Love Letters</title>
-<meta name="theme-color" content="#0077b6">
-<link rel="icon" href="icons/icon-192.png" type="image/png">
+  <title>Letters</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0077b6">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<link rel="prefetch" href="notes.html">
-<link rel="prefetch" href="music.html">
-<link rel="prefetch" href="gallery.html">
-<link rel="preload" href="music.html" as="document">
-<link rel="preload" href="shared-music-player.js" as="script">
-<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://widget.cloudinary.com" crossorigin>
-<link rel="dns-prefetch" href="https://www.gstatic.com">
-<link rel="dns-prefetch" href="https://widget.cloudinary.com">
-<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js">
-<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js">
-<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&amp;family=Roboto:wght@300;400;700&amp;display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&amp;display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Mali:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
-
-<style>
-body {
-  margin: 0;
-  font-family: 'poppins', sans-serif;
-  background: #fef6f6;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-.navbar {
-  font-family: "Mali";
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background: #0077b6;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-   gap: 40px;
-  padding: 20px 0;
-  z-index: 1000;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-.navbar a {
-   background-color: #d94c6f;
-  color: white;
-  text-decoration: none;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border-radius: 8px;
-  transition: 0.2s;
-  font-size: 16px;
-}
-
-.navbar a:hover {
-  background: #005f87;
-}
-
-.desk_only {
-  display: inline;
-  
-}
-
-#nowPlaying { position:fixed; top:70px; left:0; width:100%; background:linear-gradient(135deg,#d94c6f,#0077b6); padding:12px 25px; z-index:999; display:none; align-items:center; gap:12px; box-shadow:0 2px 8px rgba(0,0,0,.2); color:#fff; box-sizing:border-box; }
-#nowPlaying.active { display:flex; }
-.visualizer { display:flex; gap:3px; align-items:flex-end; height:30px; flex-shrink:0; }
-.visualizer span { width:4px; background:#fff; border-radius:2px; animation:wave 0.8s ease-in-out infinite; }
-.visualizer span:nth-child(1) { animation-delay:0s; }
-.visualizer span:nth-child(2) { animation-delay:0.1s; }
-.visualizer span:nth-child(3) { animation-delay:0.2s; }
-.visualizer span:nth-child(4) { animation-delay:0.3s; }
-.visualizer span:nth-child(5) { animation-delay:0.4s; }
-@keyframes wave { 0%, 100% { height:8px; } 50% { height:28px; } }
-#nowPlayingTitle { flex:1; font-weight:600; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
-.playControls { display:flex; gap:8px; flex-shrink:0; }
-.playControls button { background:rgba(255,255,255,0.2); border:2px solid #fff; color:#fff; width:38px; height:38px; border-radius:50%; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center; transition:.2s; flex-shrink:0; }
-.playControls button:hover { background:rgba(255,255,255,0.3); transform:scale(1.05); }
-.playControls button:active { transform:scale(0.95); }
-
-@media (max-width: 768px) {
-  .desk_only {
-    display: none; /* hide text on mobile */
-  }
-  .navbar {
-    justify-content: space-around;
-  }
-  .navbar a {
-    font-size: 18px;
-    padding: 6px 10px;
-  }
-  #nowPlaying { padding:8px 15px; gap:8px; }
-  .visualizer { height:22px; gap:2px; }
-  .visualizer span { width:3px; }
-  @keyframes wave { 0%, 100% { height:6px; } 50% { height:20px; } }
-  #nowPlayingTitle { font-size:14px; }
-  .playControls button { width:32px; height:32px; font-size:13px; }
-}
-
-header {
-  background: #d94c6f;
-  color: white;
-  text-align: center;
-  padding: 12px;
-  margin-top: 132px;
-  font-size: 24px;
-  font-family: 'Great Vibes', cursive;
-}
-
-#lettersContainer {
-  flex: 1;
-  display: flex;
-  height: calc(100vh - 50px);
-  overflow: hidden;
-  position: relative;
-}
-
-#lettersList {
-  width: 250px;
-  background: #fff8f0;
-  border-right: 1px solid #eee;
-  padding: 10px;
-  overflow-y: auto;
-  transition: transform 0.3s ease;
-  background-color: pink;
-}
-
-.letterItem {
-  padding: 10px;
-  margin-bottom: 8px;
-  background: white;
-  border-radius: 8px;
-  cursor: pointer;
-  font-family: 'Great Vibes', cursive;
-  font-size: 18px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.letterItem:hover { background: #fce4ec; }
-
-.letterDelete {
-  color: red;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-#editor {
-  flex: 1;
-  display: none;
-  flex-direction: column;
-  background: #fffaf7;
-  padding: 20px;
-  position: relative;
-  box-sizing: border-box;
-}
-
-#editorContent {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-#titleInput {
-  font-family: 'Great Vibes', cursive;
-  font-size: 28px;
-  border: none;
-  outline: none;
-  margin-bottom: 10px;
-  background: none;
-  text-align: center;
-  width: 100%;
-}
-
-#contentInput {
-  flex: 1;
-  border: none;
-  outline: none;
-  resize: none;
-  background: none;
-  font-size: 16px;
-  line-height: 1.6;
-  width: 100%;
-}
-
-#saveBtn {
-  position: absolute;
-  bottom: 20px;
-  left: 2-px; /* beside sidebar */
-  background: #d94c6f;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  cursor: pointer;
-  border-radius: 8px;
-  font-size: 16px;
-  z-index: 5;
-}
-
-#closeBtn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: #ff4d4d;
-  border: none;
-  color: white;
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 20px;
-}
-
-#addBtn {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 55px;
-  height: 55px;
-  border-radius: 50%;
-  background: #d94c6f;
-  color: white;
-  font-size: 30px;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-
-/* MOBILE RESPONSIVE */
-@media(max-width:768px){
-  #lettersContainer { flex-direction: column; }
-  #lettersList {
-    width: 100%;
-    height: 150px;
-    border-right: none;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    overflow-x: auto;
-    overflow-y: hidden;
-    flex-direction: column;
-  }
-  .letterItem { flex: 0 0 auto; margin-right: 8px; }
-  #editor { flex: 1; padding: 15px; }
-
-  /* Hide sidebar when editor opens */
-  #lettersContainer.hideSidebar #lettersList {
-    display: none !important;
-  }
-
-  #saveBtn { left: 10px; bottom:15px; padding: 10px 16px; font-size: 14px; }
-  #closeBtn { top: 5px; right: 5px; width: 30px; height: 30px; font-size: 18px; }
-}
-</style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Poppins', sans-serif; padding: 20px; background: #f5f5f5; margin: 0; }
+    h1 { color: #0077b6; text-align: center; }
+    .navbar { background: #0077b6; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+    .navbar a { color: white; text-decoration: none; padding: 8px 16px; background: rgba(255,255,255,0.2); border-radius: 4px; transition: 0.2s; }
+    .navbar a:hover { background: rgba(255,255,255,0.3); }
+    .navbar a.active { background: #d94c6f; }
+    .letterItem { background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 800px; margin-left: auto; margin-right: auto; }
+    .letterMeta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+    .letterMeta input, .letterMeta select { padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+    .letterMeta input:first-child { flex-grow: 1; min-width: 200px; }
+    .letterMeta input:nth-child(2) { flex-grow: 1; min-width: 200px; }
+    .letterStatus { display: flex; gap: 10px; align-items: center; }
+    .letterStatus select { padding: 5px; }
+    .deleteLetterBtn { background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+    .letterContent { width: 100%; height: 200px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical; }
+    .letterTimestamp { font-size: 12px; color: #999; margin-top: 10px; }
+    #newLetterBtn { padding: 12px 20px; background: #007bff; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto; }
+    #newLetterBtn:hover { background: #0056b3; }
+  </style>
 </head>
 <body>
-<nav class="navbar">
-  <a href="notes.html"><i class="fas fa-sticky-note"></i><span class="desk_only">Notes</span></a>
-  <a href="music.html"><i class="fas fa-music"></i><span class="desk_only">Music</span></a>
-  <a href="gallery.html"><i class="fas fa-image"></i><span class="desk_only">Gallery</span></a>
-  <a href="letters.html"><i class="fas fa-envelope-open-text"></i><span class="desk_only">Letters</span></a>
-</nav>
-
-<div id="nowPlaying">
-  <div class="visualizer">
-    <span></span><span></span><span></span><span></span><span></span>
+  <div class="navbar">
+    <a href="notes.html"><i class="fas fa-sticky-note"></i> Notes</a>
+    <a href="music.html"><i class="fas fa-music"></i> Music</a>
+    <a href="gallery.html"><i class="fas fa-images"></i> Gallery</a>
+    <a href="letters.html" class="active"><i class="fas fa-envelope"></i> Letters</a>
   </div>
-  <div id="nowPlayingTitle">Nothing playing</div>
-  <div class="playControls">
-    <button id="playPauseBtn" title="Play/Pause"><i class="fas fa-play"></i></button>
-  </div>
-</div>
-<header>My Letters 💌</header>
 
-<div id="lettersContainer">
-  <div id="lettersList"></div>
-  <div id="editor">
-    <button id="closeBtn">×</button>
-    <div id="editorContent">
-      <input type="text" id="titleInput" placeholder="Letter Title...">
-      <textarea id="contentInput" placeholder="Write your love letter here..."></textarea>
-    </div>
-    <button id="saveBtn">Save</button>
-  </div>
-</div>
+  <h1>💌 Letters</h1>
 
-<button id="addBtn">+</button>
+  <button id="newLetterBtn">
+    <i class="fas fa-pen"></i> New Letter
+  </button>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+  <ul id="lettersList" style="list-style: none; padding: 0; max-width: 800px; margin: 0 auto;"></ul>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAbancsm9ps84wLP8G5-PlqZ2qORswgtI4",
-  authDomain: "forsm-95871.firebaseapp.com",
-  projectId: "forsm-95871",
-  storageBucket: "forsm-95871.appspot.com",
-  messagingSenderId: "539969325228",
-  appId: "1:539969325228:web:69b5ce6518841ad5f67709"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-const addBtn = document.getElementById("addBtn");
-const lettersList = document.getElementById("lettersList");
-const lettersContainer = document.getElementById("lettersContainer");
-const editor = document.getElementById("editor");
-const closeBtn = document.getElementById("closeBtn");
-const saveBtn = document.getElementById("saveBtn");
-const titleInput = document.getElementById("titleInput");
-const contentInput = document.getElementById("contentInput");
-
-let editingId = null;
-
-onAuthStateChanged(auth, user => {
-  if (!user) window.location.href = "login.html";
-  else loadLetters();
-});
-
-async function loadLetters() {
-  lettersList.innerHTML = "";
-  const snapshot = await getDocs(collection(db, "letters"));
-  snapshot.forEach(docSnap => {
-    const data = docSnap.data();
-    const div = document.createElement("div");
-    div.className = "letterItem";
-
-    const span = document.createElement("span");
-    span.innerText = data.title;
-    span.style.flex = "1";
-    span.addEventListener("click", () => openEditor(docSnap.id, data));
-
-    const del = document.createElement("span");
-    del.innerText = "×";
-    del.className = "letterDelete";
-    del.addEventListener("click", async (e) => {
-      e.stopPropagation();
-      if (confirm("Delete this letter?")) {
-        await deleteDoc(doc(db, "letters", docSnap.id));
-        loadLetters();
-        if (editingId === docSnap.id) editor.style.display = "none";
+  <script type="module">
+    import { auth } from './supabase-integration.js';
+    const checkAuth = async () => {
+      try {
+        const user = await auth.getUser();
+        if (!user) window.location.href = 'index.html';
+      } catch (e) {
+        window.location.href = 'index.html';
       }
-    });
+    };
+    checkAuth();
+  </script>
 
-    div.appendChild(span);
-    div.appendChild(del);
-    lettersList.appendChild(div);
-  });
-}
+  <script type="module" src="performance-core.js"></script>
+  <script type="module" src="letters-supabase.js"></script>
 
-function openEditor(id = null, data = null) {
-  editingId = id;
-  editor.style.display = "flex";
-
-  if(window.innerWidth <= 768){
-    lettersContainer.classList.add("hideSidebar");
-  }
-
-  if (data) {
-    titleInput.value = data.title;
-    contentInput.value = data.content;
-  } else {
-    titleInput.value = "";
-    contentInput.value = "";
-  }
-}
-
-function closeEditor() {
-  editor.style.display = "none";
-  lettersContainer.classList.remove("hideSidebar");
-}
-
-saveBtn.addEventListener("click", async () => {
-  const title = titleInput.value.trim();
-  const content = contentInput.value.trim();
-  if (!title || !content) return alert("Please fill title and content");
-
-  if (editingId) await updateDoc(doc(db, "letters", editingId), { title, content });
-  else await addDoc(collection(db, "letters"), { title, content });
-
-  editor.style.display = "none";
-  lettersContainer.classList.remove("hideSidebar");
-  loadLetters();
-});
-
-addBtn.addEventListener("click", () => openEditor());
-closeBtn.addEventListener("click", closeEditor);
-
-if ('serviceWorker' in navigator) {
-  (async () => {
-    try {
-      const reg = await navigator.serviceWorker.register('service-workere5bf.js?v=12', { scope: '/', updateViaCache: 'none' });
-      reg.addEventListener('updatefound', () => {
-        const sw = reg.installing;
-        if (!sw) return;
-        sw.addEventListener('statechange', () => {
-          if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-            sw.postMessage({ type: 'SKIP_WAITING' });
-          }
-        });
-      });
-      navigator.serviceWorker.addEventListener('controllerchange', () => location.reload());
-      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update(); });
-      // Optional: log SW version
-      navigator.serviceWorker.addEventListener('message', e => { if (e.data?.type === 'VERSION') console.log('SW', e.data.version); });
-      navigator.serviceWorker.controller?.postMessage({ type: 'GET_VERSION' });
-    } catch (e) { console.log('SW registration failed:', e); }
-  })();
-}
-</script>
-<script src="shared-music-player.js" defer></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker-optimized.js').catch(e => console.log('SW error:', e));
+    }
+  </script>
 </body>
-
-<!-- Mirrored from forsm-95871.web.app/letters.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 06 Nov 2025 09:16:42 GMT -->
 </html>

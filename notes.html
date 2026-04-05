@@ -1,381 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
-
-<!-- Mirrored from forsm-95871.web.app/notes.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 06 Nov 2025 09:16:38 GMT -->
-<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Notes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0077b6">
-<link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
   <link rel="manifest" href="manifest.json">
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<link rel="prefetch" href="music.html">
-<link rel="prefetch" href="gallery.html">
-<link rel="prefetch" href="letters.html">
-<link rel="preload" href="music.html" as="document">
-<link rel="preload" href="shared-music-player.js" as="script">
-<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://widget.cloudinary.com" crossorigin>
-<link rel="dns-prefetch" href="https://www.gstatic.com">
-<link rel="dns-prefetch" href="https://widget.cloudinary.com">
-<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js">
-<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js">
-<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&amp;family=Roboto:wght@300;400;700&amp;display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&amp;display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Mali:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
- <style>
-    body {
-      margin: 0;
-      font-family: "Poppins", sans-serif;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      background: #f8f9fa;
-    }
-
-    /* Navbar */
-    .navbar {
-      font-family: "Mali";
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background: #0077b6;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 40px;
-      padding: 20px 0;
-      z-index: 1000;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    .navbar a {
-      background-color: #d94c6f;
-      color: white;
-      text-decoration: none;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 12px;
-      border-radius: 8px;
-      transition: 0.2s;
-      font-size: 16px;
-    }
-    .navbar a:hover {
-      background: #005f87;
-    }
-    .desk_only { display: inline; }
-    @media (max-width: 768px) {
-      .desk_only { display: none; }
-      .navbar { justify-content: space-around; }
-      .navbar a { font-size: 18px; padding: 6px 10px; }
-    }
-
-    /* Now Playing Bar */
-    #nowPlaying { position:fixed; top:70px; left:0; width:100%; background:linear-gradient(135deg,#d94c6f,#0077b6); padding:12px 25px; z-index:999; display:none; align-items:center; gap:12px; box-shadow:0 2px 8px rgba(0,0,0,.2); color:#fff; box-sizing:border-box; }
-    #nowPlaying.active { display:flex; }
-    .visualizer { display:flex; gap:3px; align-items:flex-end; height:30px; flex-shrink:0; }
-    .visualizer span { width:4px; background:#fff; border-radius:2px; animation:wave 0.8s ease-in-out infinite; }
-    .visualizer span:nth-child(1) { animation-delay:0s; }
-    .visualizer span:nth-child(2) { animation-delay:0.1s; }
-    .visualizer span:nth-child(3) { animation-delay:0.2s; }
-    .visualizer span:nth-child(4) { animation-delay:0.3s; }
-    .visualizer span:nth-child(5) { animation-delay:0.4s; }
-    @keyframes wave { 0%, 100% { height:8px; } 50% { height:28px; } }
-    #nowPlayingTitle { flex:1; font-weight:600; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
-    .playControls { display:flex; gap:8px; flex-shrink:0; }
-    .playControls button { background:rgba(255,255,255,0.2); border:2px solid #fff; color:#fff; width:38px; height:38px; border-radius:50%; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center; transition:.2s; flex-shrink:0; }
-    .playControls button:hover { background:rgba(255,255,255,0.3); transform:scale(1.05); }
-    .playControls button:active { transform:scale(0.95); }
-
-    @media (max-width: 768px) {
-      #nowPlaying { padding:8px 15px; gap:8px; }
-      .visualizer { height:22px; gap:2px; }
-      .visualizer span { width:3px; }
-      @keyframes wave { 0%, 100% { height:6px; } 50% { height:20px; } }
-      #nowPlayingTitle { font-size:14px; }
-      .playControls button { width:32px; height:32px; font-size:13px; }
-    }
-
-    /* Main container */
-    .main-container {
-      flex: 1;
-      display: flex;
-      margin-top: 130px;
-      overflow: hidden;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      width: 250px;
-      background: pink;
-      color: black;
-      display: flex;
-      flex-direction: column;
-      padding: 10px;
-      box-sizing: border-box;
-    }
-    .sidebar h2 {
-      margin: 0 0 10px 0;
-      text-align: center;
-    }
-    .note-item {
-      padding: 10px;
-      margin: 5px 0;
-      background: white;
-      border-radius: 6px;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .note-item:hover { background: #eaeaea; }
-    .note-item i { cursor: pointer; }
-
-    /* Editor */
-    .editor {
-      flex: 1;
-      display: none;
-      flex-direction: column;
-      padding: 10px;
-      box-sizing: border-box;
-      position: relative;
-      background: white;
-    }
-    .editor textarea {
-      flex: 1;
-      margin-top: 10px;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      outline: none;
-      resize: none;
-      font-size: 16px;
-      font-family: "Poppins", sans-serif;
-      background: #f0f4f8;
-    }
-    .editor .title {
-      text-align: center;
-      padding: 5px;
-      margin-bottom: 10px;
-      font-size: 18px;
-      font-weight: bold;
-      border: none;
-      outline: none;
-      width: 100%;
-      background: transparent;
-    }
-    .save-btn {
-      position: absolute;
-      left: 10px;
-      top: 10px;
-      background: #d94c6f;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    /* Add button */
-    .add-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #d94c6f;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }
-    #closeBtn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: #ff4d4d;
-  border: none;
-  color: white;
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 20px;
-}
-
-    /* Responsive */
-    @media(max-width:768px){
-      .sidebar { width: 100%; position: absolute; left: 0; top: 135px; }
-      .editor { width: 100%; height: 100%; position: absolute; top: 135px; left: 0; background: white; }
-      body { padding-top: 135px; }
-    }
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Poppins', sans-serif; padding: 20px; background: #f5f5f5; margin: 0; }
+    h1 { color: #0077b6; text-align: center; }
+    .navbar { background: #0077b6; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+    .navbar a { color: white; text-decoration: none; padding: 8px 16px; background: rgba(255,255,255,0.2); border-radius: 4px; transition: 0.2s; }
+    .navbar a:hover { background: rgba(255,255,255,0.3); }
+    .navbar a.active { background: #d94c6f; }
+    .noteItem { background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 800px; margin-left: auto; margin-right: auto; }
+    .noteHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .noteTitle { font-size: 18px; font-weight: 600; border: none; padding: 5px; flex-grow: 1; border-bottom: 2px solid transparent; transition: border-color 0.3s; }
+    .noteTitle:focus { outline: none; border-bottom: 2px solid #007bff; }
+    .noteContent { width: 100%; height: 150px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical; }
+    .noteTimestamp { font-size: 12px; color: #999; margin-top: 10px; }
+    .deleteNoteBtn { background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+    #addNoteBtn { padding: 12px 20px; background: #28a745; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto; }
+    #addNoteBtn:hover { background: #218838; }
   </style>
 </head>
 <body>
-  <!-- Navbar -->
-  <nav class="navbar">
-    <a href="notes.html"><i class="fas fa-sticky-note"></i><span class="desk_only">Notes</span></a>
-    <a href="music.html"><i class="fas fa-music"></i><span class="desk_only">Music</span></a>
-    <a href="gallery.html"><i class="fas fa-image"></i><span class="desk_only">Gallery</span></a>
-    <a href="letters.html"><i class="fas fa-envelope-open-text"></i><span class="desk_only">Letters</span></a>
-  </nav>
-
-  <!-- Now Playing Bar -->
-  <div id="nowPlaying">
-    <div class="visualizer">
-      <span></span><span></span><span></span><span></span><span></span>
-    </div>
-    <div id="nowPlayingTitle">Nothing playing</div>
-    <div class="playControls">
-      <button id="playPauseBtn" title="Play/Pause"><i class="fas fa-play"></i></button>
-    </div>
+  <div class="navbar">
+    <a href="notes.html" class="active"><i class="fas fa-sticky-note"></i> Notes</a>
+    <a href="music.html"><i class="fas fa-music"></i> Music</a>
+    <a href="gallery.html"><i class="fas fa-images"></i> Gallery</a>
+    <a href="letters.html"><i class="fas fa-envelope"></i> Letters</a>
   </div>
 
-  <!-- Main container -->
-  <div class="main-container">
-    <div class="sidebar">
-      <h2>Notes</h2>
-      <div id="notesList"></div>
-    </div>
+  <h1>📝 Notes</h1>
 
-    <div class="editor">
-          <button id="closeBtn">×</button>
-      <button class="save-btn">Save</button>
-      <input class="title" id="noteTitle" placeholder="Note Title">
-      <textarea id="noteContent" placeholder="Write your note here..."></textarea>
-    </div>
-  </div>
+  <button id="addNoteBtn">
+    <i class="fas fa-plus"></i> New Note
+  </button>
 
-  <button class="add-btn"><i class="fas fa-plus"></i></button>
+  <ul id="notesList" style="list-style: none; padding: 0; max-width: 800px; margin: 0 auto;"></ul>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyAbancsm9ps84wLP8G5-PlqZ2qORswgtI4",
-      authDomain: "forsm-95871.firebaseapp.com",
-      projectId: "forsm-95871",
-      storageBucket: "forsm-95871.appspot.com",
-      messagingSenderId: "539969325228",
-      appId: "1:539969325228:web:69b5ce6518841ad5f67709"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    enableIndexedDbPersistence(db).catch(()=>{});
-    const auth = getAuth(app);
-
-    const notesList = document.getElementById("notesList");
-    const editor = document.querySelector(".editor");
-    const addBtn = document.querySelector(".add-btn");
-    const saveBtn = document.querySelector(".save-btn");
-    const noteTitle = document.getElementById("noteTitle");
-    const noteContent = document.getElementById("noteContent");
-    const closeBtn = document.getElementById("closeBtn");
-
-    let currentNoteId = null;
-
-    // Auth check
-    onAuthStateChanged(auth, user => {
-      if(!user) window.location.href = "index-2.html";
-      else loadNotes();
-    });
-
-    // Add new note
-    addBtn.addEventListener("click", () => {
-      currentNoteId = null;
-      noteTitle.value = "";
-      noteContent.value = "";
-      editor.style.display = "flex";
-      if(window.innerWidth < 768) document.querySelector(".sidebar").style.display = "none";
-    });
-
-    // Fix: Hide editor and show sidebar on close
-    closeBtn.addEventListener("click", () => {
-      editor.style.display = "none";
-      if(window.innerWidth < 768) document.querySelector(".sidebar").style.display = "block";
-    });
-
-    // Save note
-    saveBtn.addEventListener("click", async () => {
-      const title = noteTitle.value.trim();
-      const content = noteContent.value.trim();
-      if(!title && !content) return;
-
-      if(currentNoteId){
-        await updateDoc(doc(db, "notes", currentNoteId), { title, content });
-      } else {
-        await addDoc(collection(db, "notes"), { title, content });
+    import { auth } from './supabase-integration.js';
+    const checkAuth = async () => {
+      try {
+        const user = await auth.getUser();
+        if (!user) window.location.href = 'index.html';
+      } catch (e) {
+        window.location.href = 'index.html';
       }
-      editor.style.display = "none";
-      if(window.innerWidth < 768) document.querySelector(".sidebar").style.display = "block";
-      loadNotes();
-    });
-
-    // Load all notes
-    async function loadNotes(){
-      notesList.innerHTML = "";
-      onSnapshot(collection(db, "notes"), (snap) => {
-        notesList.innerHTML = "";
-        snap.forEach(d => {
-          const data = d.data();
-          const div = document.createElement("div");
-          div.className = "note-item";
-          div.innerHTML = `
-            <span>${data.title || "Untitled"}</span>
-            <i class="fas fa-times" data-id="${d.id}"></i>
-          `;
-          div.addEventListener("click", e => {
-            if(e.target.tagName === "I") return;
-            currentNoteId = d.id;
-            noteTitle.value = data.title || "";
-            noteContent.value = data.content || "";
-            editor.style.display = "flex";
-            if(window.innerWidth < 768) document.querySelector(".sidebar").style.display = "none";
-          });
-          div.querySelector("i").addEventListener("click", async e => {
-            await deleteDoc(doc(db, "notes", e.target.dataset.id));
-          });
-          notesList.appendChild(div);
-        });
-      });
-    }
-if ('serviceWorker' in navigator) {
-  (async () => {
-    try {
-      const reg = await navigator.serviceWorker.register('service-workere5bf.js?v=12', { scope: '/', updateViaCache: 'none' });
-      reg.addEventListener('updatefound', () => {
-        const sw = reg.installing;
-        if (!sw) return;
-        sw.addEventListener('statechange', () => {
-          if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-            sw.postMessage({ type: 'SKIP_WAITING' });
-          }
-        });
-      });
-      navigator.serviceWorker.addEventListener('controllerchange', () => location.reload());
-      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update(); });
-      // Optional: log SW version
-      navigator.serviceWorker.addEventListener('message', e => { if (e.data?.type === 'VERSION') console.log('SW', e.data.version); });
-      navigator.serviceWorker.controller?.postMessage({ type: 'GET_VERSION' });
-    } catch (e) { console.log('SW registration failed:', e); }
-  })();
-}
+    };
+    checkAuth();
   </script>
-  <script src="shared-music-player.js" defer></script>
-</body>
 
-<!-- Mirrored from forsm-95871.web.app/notes.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 06 Nov 2025 09:16:39 GMT -->
+  <script type="module" src="performance-core.js"></script>
+  <script type="module" src="notes-supabase.js"></script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker-optimized.js').catch(e => console.log('SW error:', e));
+    }
+  </script>
+</body>
 </html>
