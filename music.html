@@ -65,8 +65,8 @@ body { font-family:'Poppins',sans-serif; padding-top:140px; background:pink; mar
   .playControls { gap:6px; } 
   .playControls button { width:32px; height:32px; font-size:13px; border:1.5px solid #fff; } 
 }
-#musicList { display:flex; gap:15px; padding:20px 40px; overflow-x:auto; overflow-y:hidden; min-height:200px; scrollbar-width:thin; }
-#musicList div { background:#fff; padding:15px; border-radius:8px; display:flex; flex-direction:column; gap:6px; position:relative; min-width:220px; max-width:220px; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,.1); transition:.2s; }
+#musicList { display:flex; flex-direction:column; gap:15px; padding:20px 40px; overflow-y:auto; overflow-x:hidden; min-height:200px; scrollbar-width:thin; }
+#musicList div { background:#fff; padding:15px; border-radius:8px; display:flex; flex-direction:column; gap:6px; position:relative; width:100%; box-shadow:0 2px 8px rgba(0,0,0,.1); transition:.2s; }
 #musicList div:hover { box-shadow:0 4px 12px rgba(0,0,0,.15); transform:translateY(-2px); }
 #musicList audio { width:100%; margin:8px 0; border-radius:4px; }
 #musicList strong { font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
