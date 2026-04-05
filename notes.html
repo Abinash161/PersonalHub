@@ -274,10 +274,12 @@
     </div>
 
     <div class="editor">
-      <button id="closeBtn">×</button>
-      <button class="save-btn">Save</button>
-      <input class="title" id="noteTitle" placeholder="Note Title">
-      <textarea id="noteContent" placeholder="Write your note here..."></textarea>
+      <button id="closeBtn" type="button">×</button>
+      <form id="noteForm" onsubmit="return false;">
+        <input class="title" id="noteTitle" type="text" placeholder="Note Title">
+        <textarea id="noteContent" placeholder="Write your note here..."></textarea>
+        <button class="save-btn" type="submit">Save</button>
+      </form>
     </div>
   </div>
 
@@ -289,7 +291,8 @@
     const notesList = document.getElementById("notesList");
     const editor = document.querySelector(".editor");
     const addBtn = document.querySelector(".add-btn");
-    const saveBtn = document.querySelector(".save-btn");
+    const noteForm = document.getElementById("noteForm");
+    const saveBtn = noteForm.querySelector(".save-btn");
     const noteTitle = document.getElementById("noteTitle");
     const noteContent = document.getElementById("noteContent");
     const closeBtn = document.getElementById("closeBtn");
@@ -341,7 +344,8 @@
       if(window.innerWidth < 768) document.querySelector(".sidebar").style.display = "block";
     });
 
-    saveBtn.addEventListener("click", async () => {
+    noteForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
       const title = noteTitle.value.trim();
       const content = noteContent.value.trim();
       if(!title && !content) {
@@ -380,7 +384,7 @@
         }
         editor.style.display = "none";
         if(window.innerWidth < 768) document.querySelector(".sidebar").style.display = "block";
-        loadNotes();
+        location.reload();
       } catch (e) {
         console.error('Save error:', e);
         alert('Save failed: ' + e.message);
@@ -419,12 +423,15 @@
               if(window.innerWidth < 768) document.querySelector(".sidebar").style.display = "none";
             });
             div.querySelector("i").addEventListener("click", async e => {
-              try {
-                await supabase.from('notes').delete().eq('id', d.id);
-                loadNotes();
-              } catch (e) {
-                console.error('Delete error:', e);
-                alert('Delete failed: ' + e.message);
+              e.stopPropagation();
+              if (confirm('Delete this note?')) {
+                try {
+                  await supabase.from('notes').delete().eq('id', d.id);
+                  location.reload();
+                } catch (e) {
+                  console.error('Delete error:', e);
+                  alert('Delete failed: ' + e.message);
+                }
               }
             });
             notesList.appendChild(div);

@@ -14,8 +14,8 @@
 <!-- Aggressive preload for music continuity -->
 <link rel="preload" href="shared-music-player.js" as="script">
 <link rel="preload" href="supabase-integration.js" as="script">
-<link rel="prefetch" href="music.html">
 <link rel="prefetch" href="notes.html">
+<link rel="prefetch" href="music.html">
 <link rel="prefetch" href="gallery.html">
 <link rel="preconnect" href="https://fvpedrabqhcpiifjcfik.supabase.co">
 
@@ -314,15 +314,14 @@ header {
 <div id="lettersContainer">
   <div id="lettersList"></div>
   <div id="editor">
-    <button id="closeBtn">×</button>
-    <div id="editorContent">
-      <input type="text" id="titleInput" placeholder="Letter Title...">
-      <textarea id="contentInput" placeholder="Write your letter here..."></textarea>
-    </div>
-    <button id="saveBtn">Save</button>
-  </div>
-</div>
-
+      <button id="closeBtn" type="button">×</button>
+      <form id="letterForm" onsubmit="return false;">
+        <div id="editorContent">
+          <input type="text" id="titleInput" placeholder="Letter Title...">
+          <textarea id="contentInput" placeholder="Write your letter here..."></textarea>
+        </div>
+        <button id="saveBtn" type="submit">Save</button>
+      </form>
 <button id="addBtn">+</button>
 
 <script type="module">
@@ -333,7 +332,8 @@ const lettersList = document.getElementById("lettersList");
 const lettersContainer = document.getElementById("lettersContainer");
 const editor = document.getElementById("editor");
 const closeBtn = document.getElementById("closeBtn");
-const saveBtn = document.getElementById("saveBtn");
+const letterForm = document.getElementById("letterForm");
+const saveBtn = letterForm.querySelector("#saveBtn");
 const titleInput = document.getElementById("titleInput");
 const contentInput = document.getElementById("contentInput");
 
@@ -402,8 +402,7 @@ async function loadLetters() {
           if (confirm("Delete this letter?")) {
             try {
               await supabase.from('letters').delete().eq('id', docData.id);
-              loadLetters();
-              if (editingId === docData.id) editor.style.display = "none";
+              location.reload();
             } catch (e) {
               console.error('Delete error:', e);
               alert('Delete failed: ' + e.message);
@@ -444,7 +443,8 @@ function closeEditor() {
   lettersContainer.classList.remove("hideSidebar");
 }
 
-saveBtn.addEventListener("click", async () => {
+letterForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
   const title = titleInput.value.trim();
   const content = contentInput.value.trim();
   if (!title || !content) {
@@ -470,7 +470,7 @@ saveBtn.addEventListener("click", async () => {
 
     editor.style.display = "none";
     lettersContainer.classList.remove("hideSidebar");
-    loadLetters();
+    location.reload();
   } catch (e) {
     console.error('Save error:', e);
     alert('Save failed: ' + e.message);

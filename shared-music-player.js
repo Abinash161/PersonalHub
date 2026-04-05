@@ -144,6 +144,7 @@
 
     const title = localStorage.getItem('music_last_track_title') || 'Nothing playing';
     const playing = isPlaying !== null ? isPlaying : localStorage.getItem('music_is_playing') === 'true';
+    const trackUrl = localStorage.getItem('music_last_track_url');
 
     // Always update - don't skip
     lastTitle = title;
@@ -151,9 +152,12 @@
 
     nowPlayingTitle.textContent = title;
     
-    if (playing && localStorage.getItem('music_last_track_url')) {
+    // Show bar if there's a current track (playing or paused)
+    if (trackUrl) {
       nowPlayingBar.classList.add('active');
-      if (playPauseBtn) playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+      if (playPauseBtn) {
+        playPauseBtn.innerHTML = playing ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+      }
     } else {
       nowPlayingBar.classList.remove('active');
       if (playPauseBtn) playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';

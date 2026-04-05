@@ -13,8 +13,8 @@
 <!-- Aggressive preload for music continuity -->
 <link rel="preload" href="shared-music-player.js" as="script">
 <link rel="preload" href="supabase-integration.js" as="script">
-<link rel="prefetch" href="music.html">
 <link rel="prefetch" href="notes.html">
+<link rel="prefetch" href="music.html">
 <link rel="prefetch" href="letters.html">
 <link rel="preconnect" href="https://fvpedrabqhcpiifjcfik.supabase.co">
 <style>
@@ -178,10 +178,12 @@ body { font-family:'Poppins',sans-serif; background:pink; padding-top:130px; }
 
 <div id="folderPopup">
   <div id="popupContent">
-    <button class="closePopup">&times;</button>
+    <button class="closePopup" type="button">&times;</button>
     <h3 style="margin:0;">Create New Folder</h3>
-    <input type="text" id="popupFolderName" placeholder="Folder Name">
-    <button id="popupCreateBtn">Create</button>
+    <form id="folderForm" onsubmit="return false;">
+      <input type="text" id="popupFolderName" placeholder="Folder Name">
+      <button type="submit">Create</button>
+    </form>
   </div>
 </div>
 
@@ -200,6 +202,7 @@ const createFolderBtn = document.getElementById("createFolderBtn");
 const cameraBtn = document.getElementById("cameraBtn");
 const imageFile = document.getElementById("imageFile");
 const folderPopup = document.getElementById("folderPopup");
+const folderForm = document.getElementById("folderForm");
 const fullscreenOverlay = document.getElementById("fullscreenOverlay");
 
 let currentFolderId = null;
@@ -301,12 +304,14 @@ async function openFolder(folderId) {
         imgDiv.querySelector("img").addEventListener("click", () => showFullscreen(cachedUrl));
         imgDiv.querySelector(".crossBtn").addEventListener("click", async (e) => {
           e.stopPropagation();
-          try {
-            await supabase.from('gallery_images').delete().eq('id', image.id);
-            openFolder(folderId);
-          } catch (e) {
-            console.error('Delete error:', e);
-            alert('Delete failed: ' + e.message);
+          if (confirm('Delete this image?')) {
+            try {
+              await supabase.from('gallery_images').delete().eq('id', image.id);
+              location.reload();
+            } catch (e) {
+              console.error('Delete error:', e);
+              alert('Delete failed: ' + e.message);
+            }
           }
         });
         galleryList.appendChild(imgDiv);
@@ -338,7 +343,8 @@ document.querySelector(".closePopup").addEventListener("click", () => {
   folderPopup.style.display = "none";
 });
 
-document.getElementById("popupCreateBtn").addEventListener("click", async () => {
+folderForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
   const folderName = document.getElementById("popupFolderName").value.trim();
   if (!folderName) {
     alert('Please enter a folder name');
@@ -375,7 +381,7 @@ document.getElementById("popupCreateBtn").addEventListener("click", async () => 
     
     folderPopup.style.display = "none";
     document.getElementById("popupFolderName").value = "";
-    loadFolders();
+    location.reload();
   } catch (e) {
     console.error('Create folder error:', e);
     alert('Create failed: ' + e.message);

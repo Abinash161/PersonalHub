@@ -65,16 +65,18 @@ body { font-family:'Poppins',sans-serif; padding-top:140px; background:pink; mar
   .playControls { gap:6px; } 
   .playControls button { width:32px; height:32px; font-size:13px; border:1.5px solid #fff; } 
   #musicList { padding:10px 15px; gap:10px; } 
-  #musicList div { padding:10px; min-width:unset; max-width:unset; } 
-  #musicList audio { width:100%; } 
+  #musicList div { padding:10px; padding-top:50px; } 
   #musicList strong { font-size:13px; } 
+  .playTrackBtn { font-size:11px; padding:4px 8px; left:8px; top:8px; }
+  .deleteBtn { font-size:10px; padding:3px 6px; }
   #addMusicBtn { width:50px; height:50px; font-size:25px; } 
 }
 #musicList { display:flex; flex-direction:column; gap:15px; padding:20px 40px; overflow-y:auto; overflow-x:hidden; min-height:200px; scrollbar-width:thin; }
-#musicList div { background:#fff; padding:15px; border-radius:8px; display:flex; flex-direction:column; gap:6px; position:relative; width:100%; box-shadow:0 2px 8px rgba(0,0,0,.1); transition:.2s; }
+#musicList div { background:#fff; padding:15px; border-radius:8px; display:flex; flex-direction:column; gap:6px; position:relative; width:100%; box-shadow:0 2px 8px rgba(0,0,0,.1); transition:.2s; padding-bottom:50px; }
 #musicList div:hover { box-shadow:0 4px 12px rgba(0,0,0,.15); transform:translateY(-2px); }
-#musicList audio { width:100%; margin:8px 0; border-radius:4px; }
 #musicList strong { font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.playTrackBtn { position:absolute; top:8px; left:8px; background:#0077b6; color:#fff; border:none; border-radius:4px; cursor:pointer; padding:6px 10px; font-size:12px; transition:.2s; display:flex; align-items:center; gap:4px; }
+.playTrackBtn:hover { background:#005087; }
 .deleteBtn { position:absolute; top:8px; right:8px; background:red; color:#fff; border:none; border-radius:4px; cursor:pointer; padding:4px 8px; font-size:12px; transition:.2s; }
 .deleteBtn:hover { background:darkred; }
 #addMusicBtn { position:fixed; bottom:20px; right:20px; background:#d94c6f; color:#fff; border:none; border-radius:50%; width:60px; height:60px; font-size:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,.25);}
@@ -130,6 +132,16 @@ let currentAudio = null;
 const LAST_TRACK_URL_KEY = "music_last_track_url";
 const LAST_TIME_KEY = "music_last_track_time";
 
+// Prevent page reload on navbar navigation
+document.querySelectorAll('.navbar a').forEach(link => {
+  link.addEventListener('click', (e) => {
+    if (link.href.includes('.html')) {
+      // Keep the browser's default link behavior but ensure music continues
+      // The shared-music-player.js will handle persistence
+    }
+  });
+});
+
 // Auth check
 const checkAuth = async () => {
   try {
@@ -167,35 +179,55 @@ logoutBtn?.addEventListener('click', async () => {
 
 // Navigation controls
 prevBtn.addEventListener("click", () => {
-  if (currentAudio) {
-    const allAudios = Array.from(document.querySelectorAll("#musicList audio"));
-    const currentIndex = allAudios.indexOf(currentAudio);
-    const prev = allAudios[currentIndex - 1];
-    if (prev) {
-      currentAudio.pause();
-      prev.play().catch(()=>{});
+  // Trigger previous via localStorage - shared player will handle it
+  const playlist = JSON.parse(localStorage.getItem('music_playlist') || '[]');
+  const currentUrl = localStorage.getItem(LAST_TRACK_URL_KEY);
+  const currentIndex = playlist.findIndex(t => currentUrl && currentUrl.includes(t.url));
+  
+  if (currentIndex > 0) {
+    const prev = playlist[currentIndex - 1];
+    localStorage.setItem(LAST_TRACK_URL_KEY, prev.url);
+    localStorage.setItem('music_last_track_title', prev.title);
+    localStorage.setItem('music_is_playing', 'true');
+    localStorage.setItem(LAST_TIME_KEY, '0');
+    localStorage.setItem('music_playlist_updated', String(Date.now()));
+    
+    if ('BroadcastChannel' in window) {
+      const channel = new BroadcastChannel('music_sync');
+      channel.postMessage({ type: 'STATE_UPDATE' });
     }
   }
 });
 
 playPauseBtn.addEventListener("click", () => {
-  if (currentAudio) {
-    if (currentAudio.paused) {
-      currentAudio.play();
-    } else {
-      currentAudio.pause();
-    }
+  // Toggle play state via localStorage
+  const isPlaying = localStorage.getItem('music_is_playing') === 'true';
+  localStorage.setItem('music_is_playing', String(!isPlaying));
+  localStorage.setItem('music_playlist_updated', String(Date.now()));
+  
+  if ('BroadcastChannel' in window) {
+    const channel = new BroadcastChannel('music_sync');
+    channel.postMessage({ type: 'STATE_UPDATE' });
   }
 });
 
 nextBtn.addEventListener("click", () => {
-  if (currentAudio) {
-    const allAudios = Array.from(document.querySelectorAll("#musicList audio"));
-    const currentIndex = allAudios.indexOf(currentAudio);
-    const next = allAudios[currentIndex + 1];
-    if (next) {
-      currentAudio.pause();
-      next.play().catch(()=>{});
+  // Trigger next via localStorage - shared player will handle it
+  const playlist = JSON.parse(localStorage.getItem('music_playlist') || '[]');
+  const currentUrl = localStorage.getItem(LAST_TRACK_URL_KEY);
+  const currentIndex = playlist.findIndex(t => currentUrl && currentUrl.includes(t.url));
+  
+  if (currentIndex >= 0 && currentIndex < playlist.length - 1) {
+    const next = playlist[currentIndex + 1];
+    localStorage.setItem(LAST_TRACK_URL_KEY, next.url);
+    localStorage.setItem('music_last_track_title', next.title);
+    localStorage.setItem('music_is_playing', 'true');
+    localStorage.setItem(LAST_TIME_KEY, '0');
+    localStorage.setItem('music_playlist_updated', String(Date.now()));
+    
+    if ('BroadcastChannel' in window) {
+      const channel = new BroadcastChannel('music_sync');
+      channel.postMessage({ type: 'STATE_UPDATE' });
     }
   }
 });
@@ -203,80 +235,53 @@ nextBtn.addEventListener("click", () => {
 // File upload
 addMusicBtn.addEventListener("click", () => fileInput.click());
 
-// Add track to DOM without reload
+// Add track to DOM - shows UI but NO independent playback
 function addTrackToDom(track) {
   const wrap = document.createElement("div");
   wrap.innerHTML = `
     <strong>${track.title}</strong>
-    <audio controls preload="auto" crossorigin="anonymous" playsinline src="${track.url}"></audio>
-    <button class="deleteBtn">Delete</button>
+    <div style="display:flex; gap:6px; margin-top:8px;">
+      <button class="playTrackBtn" data-url="${track.url}" data-title="${track.title}" title="Play"><i class="fas fa-play"></i> Play</button>
+      <button class="deleteBtn">Delete</button>
+    </div>
   `;
   
-  const audioEl = wrap.querySelector("audio");
-  
-  audioEl.addEventListener("play", () => {
-    document.querySelectorAll("#musicList audio").forEach(a => {
-      if (a !== audioEl && !a.paused) a.pause();
-    });
-    currentAudio = audioEl;
-    
-    // Only update time if starting a new track (not resuming)
-    const wasPlaying = localStorage.getItem('music_last_track_url') === audioEl.src;
-    localStorage.setItem('music_last_track_url', audioEl.src);
-    localStorage.setItem("music_last_track_title", track.title);
-    localStorage.setItem("music_is_playing", "true");
-    if (!wasPlaying) {
-      localStorage.setItem("music_last_track_time", "0");
-    }
+  // Play button - just updates localStorage, shared player handles actual playback
+  const playBtn = wrap.querySelector(".playTrackBtn");
+  playBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    localStorage.setItem('music_last_track_url', track.url);
+    localStorage.setItem('music_last_track_title', track.title);
+    localStorage.setItem('music_is_playing', 'true');
+    localStorage.setItem('music_last_track_time', '0');
     localStorage.setItem('music_playlist_updated', String(Date.now()));
     
-    // Broadcast to other pages
+    // Broadcast to other pages and trigger shared player
     if ('BroadcastChannel' in window) {
       const channel = new BroadcastChannel('music_sync');
       channel.postMessage({
         type: 'STATE_UPDATE',
-        url: audioEl.src,
+        url: track.url,
         title: track.title,
         isPlaying: true,
-        currentTime: audioEl.currentTime
+        currentTime: 0
       });
     }
-    
-    nowPlaying.classList.add("active");
-    nowPlayingTitle.textContent = "🎵 " + track.title;
-    playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
   });
 
-  audioEl.addEventListener("pause", () => {
-    localStorage.setItem("music_is_playing", "false");
-    playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-  });
-
-  let lastTimeSave = 0;
-  audioEl.addEventListener("timeupdate", () => {
-    if (audioEl !== currentAudio || audioEl.paused) return;
-    const now = Date.now();
-    // Save every 500ms for better sync across pages
-    if (now - lastTimeSave > 500) {
-      lastTimeSave = now;
-      localStorage.setItem('music_last_track_time', String(audioEl.currentTime));
-    }
-  });
-
-  audioEl.addEventListener("ended", () => {
-    const allAudios = Array.from(musicList.querySelectorAll("audio"));
-    const currentIndex = allAudios.indexOf(audioEl);
-    const next = allAudios[currentIndex + 1];
-    if (next) next.play().catch(()=>{});
-  });
-
-  wrap.querySelector(".deleteBtn").addEventListener("click", async () => {
-    try {
-      await supabase.from('music_tracks').delete().eq('id', track.id);
-      wrap.remove();
-    } catch (e) {
-      console.error('Delete error:', e);
-      alert('Delete failed: ' + e.message);
+  // Delete button
+  wrap.querySelector(".deleteBtn").addEventListener("click", async (e) => {
+    e.preventDefault();
+    if (confirm('Delete this track?')) {
+      try {
+        await supabase.from('music_tracks').delete().eq('id', track.id);
+        console.log('✓ Track deleted');
+        // Reload page to refresh the list
+        location.reload();
+      } catch (e) {
+        console.error('Delete error:', e);
+        alert('Delete failed: ' + e.message);
+      }
     }
   });
 
@@ -359,6 +364,11 @@ fileInput.addEventListener("change", async e => {
     } else {
       console.log(`✓ All ${succeeded} files uploaded successfully!`);
     }
+    
+    // Reload page to refresh the list with fresh data
+    if (succeeded > 0) {
+      setTimeout(() => location.reload(), 500);
+    }
   } catch(err) {
     console.error("Upload batch error:", err);
     alert(`Upload error: ${err.message}`);
@@ -432,127 +442,6 @@ async function loadMusicList() {
     }
   } catch (e) {
     console.error('Load error:', e);
-  }
-}
-
-function renderMusicList(tracks) {
-  const lastUrl = localStorage.getItem(LAST_TRACK_URL_KEY);
-  const lastTime = parseFloat(localStorage.getItem(LAST_TIME_KEY) || "0");
-
-  musicList.innerHTML = "";
-  const audioEls = [];
-
-  if (tracks.length === 0) {
-    musicList.innerHTML = '<div style="text-align:center;padding:20px;color:#999;">No music yet. Click + to upload!</div>';
-    return;
-  }
-
-  // Pre-cache playlist for fast access on other pages
-  const playlistForCache = tracks.map(t => ({
-    title: t.title,
-    url: t.url,
-    id: t.id
-  }));
-  localStorage.setItem('music_playlist', JSON.stringify(playlistForCache));
-  localStorage.setItem('music_playlist_updated', String(Date.now()));
-
-  tracks.forEach(track => {
-    const wrap = document.createElement("div");
-    wrap.innerHTML = `
-      <strong>${track.title}</strong>
-      <audio controls preload="auto" crossorigin="anonymous" playsinline src="${track.url}"></audio>
-      <button class="deleteBtn">Delete</button>
-    `;
-    
-    const audioEl = wrap.querySelector("audio");
-    
-    // Optimize URL - use direct Supabase signed URL if available
-    audioEl.crossOrigin = 'anonymous';
-    
-    // Pause others & update now playing
-    audioEl.addEventListener("play", () => {
-      document.querySelectorAll("#musicList audio").forEach(a => {
-        if (a !== audioEl && !a.paused) a.pause();
-      });
-      currentAudio = audioEl;
-      localStorage.setItem(LAST_TRACK_URL_KEY, audioEl.src);
-      localStorage.setItem("music_last_track_title", track.title);
-      localStorage.setItem("music_is_playing", "true");
-      localStorage.setItem("music_last_track_time", "0");
-      
-      // Broadcast to other pages
-      if ('BroadcastChannel' in window) {
-        const channel = new BroadcastChannel('music_sync');
-        channel.postMessage({
-          type: 'STATE_UPDATE',
-          url: audioEl.src,
-          title: track.title,
-          isPlaying: true,
-          currentTime: 0
-        });
-      }
-      
-      nowPlaying.classList.add("active");
-      nowPlayingTitle.textContent = "🎵 " + track.title;
-      playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-    });
-
-    audioEl.addEventListener("pause", () => {
-      localStorage.setItem("music_is_playing", "false");
-      playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-    });
-
-    // Save progress
-    audioEl.addEventListener("timeupdate", () => {
-      if (audioEl !== currentAudio || audioEl.paused) return;
-      const now = Date.now();
-      const lastSave = parseInt(localStorage.getItem('music_last_save') || '0');
-      // Save every 2 seconds to avoid excessive writes
-      if (now - lastSave > 2000) {
-        localStorage.setItem(LAST_TIME_KEY, String(audioEl.currentTime));
-        localStorage.setItem('music_last_save', String(now));
-      }
-    });
-
-    // Auto next
-    audioEl.addEventListener("ended", () => {
-      const allAudios = Array.from(musicList.querySelectorAll("audio"));
-      const currentIndex = allAudios.indexOf(audioEl);
-      const next = allAudios[currentIndex + 1];
-      if (next) next.play().catch(()=>{});
-    });
-
-    // Delete
-    wrap.querySelector(".deleteBtn").addEventListener("click", async () => {
-      try {
-        await supabase.from('music_tracks').delete().eq('id', track.id);
-        loadMusicList();
-      } catch (e) {
-        console.error('Delete error:', e);
-        alert('Delete failed: ' + e.message);
-      }
-    });
-
-    musicList.appendChild(wrap);
-    audioEls.push(audioEl);
-  });
-
-  // Resume last track with optimized loading
-  if (lastUrl && audioEls.length) {
-    const target = audioEls.find(a => a.src === lastUrl);
-    if (target) {
-      currentAudio = target;
-      if (lastTime > 0) {
-        target.addEventListener('loadedmetadata', () => {
-          target.currentTime = Math.min(lastTime, target.duration);
-        }, { once: true });
-      }
-      nowPlaying.classList.add("active");
-      const trackTitle = tracks.find(t => t.url === lastUrl)?.title || "Untitled";
-      nowPlayingTitle.textContent = "🎵 " + trackTitle;
-      playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-      target.play().catch(()=>{});
-    }
   }
 }
 </script>

@@ -45,7 +45,7 @@ self.addEventListener('activate', (event) => {
 // Fetch strategy: Cache first, fallback to network
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  const url = new URL(request.url);
+  let url = new URL(request.url);
 
   // Skip non-GET requests
   if (request.method !== 'GET') {
@@ -57,17 +57,30 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Rewrite URLs without .html extension
+  const pathname = url.pathname;
+  const pages = ['notes', 'music', 'gallery', 'letters'];
+  for (const page of pages) {
+    if (pathname.endsWith(`/${page}`) || pathname === `/${page}`) {
+      url.pathname = `/${page}.html`;
+      break;
+    }
+  }
+
+  // Create a new request with the rewritten URL if it changed
+  const modifiedRequest = new Request(url.toString(), request);
+
   // Cache-first for static assets
   if (isStaticAsset(url.pathname)) {
     event.respondWith(
-      caches.match(request).then((response) => {
+      caches.match(modifiedRequest).then((response) => {
         if (response) return response;
         
-        return fetch(request)
+        return fetch(modifiedRequest)
           .then((response) => {
             if (response.ok) {
               caches.open(CACHE_NAME).then(cache => {
-                cache.put(request, response.clone());
+                cache.put(modifiedRequest, response.clone());
               });
             }
             return response;
@@ -83,17 +96,17 @@ self.addEventListener('fetch', (event) => {
 
   // Network-first for dynamic content with fallback
   event.respondWith(
-    fetch(request)
+    fetch(modifiedRequest)
       .then((response) => {
         if (response.ok) {
           caches.open(CACHE_NAME).then(cache => {
-            cache.put(request, response.clone());
+            cache.put(modifiedRequest, response.clone());
           });
         }
         return response;
       })
       .catch(() => {
-        return caches.match(request).then((response) => {
+        return caches.match(modifiedRequest).then((response) => {
           return response || new Response('Offline', { status: 503 });
         });
       })

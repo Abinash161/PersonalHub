@@ -204,12 +204,12 @@ loginBtn.addEventListener("click", async () => {
     const keys = await caches.keys();
     await Promise.all(keys.map(k => caches.delete(k)));
     // remove query and reload clean
-    const url = new URL(location.html); url.search = ''; location.replace(url.toString());
+    const url = new URL(location.href); url.search = ''; location.replace(url.toString());
     return;
   }
 
   // 2) Register current SW (disable HTTP caching via query)
-  const reg = await navigator.serviceWorker.register('service-workerf500.js?v=13', { scope: '/', updateViaCache: 'none' });
+  const reg = await navigator.serviceWorker.register('service-worker-optimized.js', { scope: '/', updateViaCache: 'none' });
 
   // 3) Activate new worker immediately when found
   reg.addEventListener('updatefound', () => {
