@@ -268,6 +268,12 @@ header {
   border: none;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  z-index: 100;
+}
+
+#addBtn:hover {
+  background: #c73a5f;
+  transform: scale(1.1);
 }
 
 @media(max-width:768px){
@@ -282,6 +288,7 @@ header {
   #lettersContainer.hideSidebar #lettersList { display: none !important; }
   #saveBtn { left: 10px; bottom:15px; padding: 10px 16px; font-size: 14px; }
   #closeBtn { top: 5px; right: 5px; width: 30px; height: 30px; font-size: 18px; }
+  #addBtn { bottom: 30px; right: 20px; width: 50px; height: 50px; font-size: 28px; }
 }
 </style>
 </head>
@@ -324,6 +331,9 @@ header {
         </div>
         <button id="saveBtn" type="submit">Save</button>
       </form>
+  </div>
+</div>
+
 <button id="addBtn">+</button>
 
 <script type="module">

@@ -18,7 +18,7 @@
 <link rel="prefetch" href="letters.html">
 <link rel="preconnect" href="https://fvpedrabqhcpiifjcfik.supabase.co">
 <style>
-body { font-family:'Poppins',sans-serif; background:pink; padding-top:130px; }
+body { font-family:'Poppins',sans-serif; background:pink; padding-top:130px; overflow-x: hidden; }
 .navbar { position: fixed; top: 0; left: 0; width: 100%; font-family: "Mali"; background: #0077b6; display: flex; justify-content: space-between; align-items: center; padding: 20px 30px; z-index: 1000; box-shadow: 0 2px 6px rgba(0,0,0,0.1); box-sizing: border-box; }
 .navbar-left { display: flex; gap: 40px; flex: 1; justify-content: center; }
 .navbar-right { display: flex; align-items: center; gap: 15px; }
@@ -65,70 +65,43 @@ body { font-family:'Poppins',sans-serif; background:pink; padding-top:130px; }
 .folderItem .folderIcon { font-size: 38px; color: #0077b6; }
 .folderItem .folderName { margin-top: 8px; font-weight: 600; color: #d94c6f; text-align: center; font-size: 12px; }
 .folderItem:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.13); }
-#galleryList { 
-  display: grid; 
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
-  gap: 20px; 
-  padding: 20px;
-  grid-auto-rows: auto;
-}
-
-/* Pinterest-style masonry layout */
-@supports (display: grid) {
-  @media (min-width: 1200px) {
-    #galleryList { 
-      column-count: 4;
-      column-gap: 20px;
-    }
-    .galleryItem {
-      break-inside: avoid;
-      margin-bottom: 20px;
-    }
-  }
-  @media (min-width: 768px) and (max-width: 1199px) {
-    #galleryList { 
-      column-count: 3;
-      column-gap: 20px;
-    }
-    .galleryItem {
-      break-inside: avoid;
-      margin-bottom: 20px;
-    }
-  }
-  @media (max-width: 767px) {
-    #galleryList { 
-      column-count: 2;
-      column-gap: 15px;
-    }
-    .galleryItem {
-      break-inside: avoid;
-      margin-bottom: 15px;
-    }
-  }
-}
-
-.galleryItem { 
-  border-radius: 8px; 
-  overflow: hidden; 
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07); 
+#galleryList {
   position: relative;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+  padding: 20px;
+  padding-right: 0;
+  padding-left: 0;
+  
+}
+
+.galleryItem {
+  position: absolute;
+  width: 200px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
   cursor: pointer;
 }
 
 .galleryItem:hover {
-  transform: translateY(-5px);
   box-shadow: 0 6px 16px rgba(0,0,0,0.15);
 }
 
-.galleryItem img { 
-  width: 100%; 
-  height: auto;
-  display: block;
+@media (max-width: 480px) {
+  .galleryItem {
+    width: 160px;
+  }
+}
+
+.galleryItem img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  display: block;
   transition: transform 0.3s ease;
 }
-.crossBtn { position: absolute; top: 8px; right: 8px; background: red; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; font-size: 16px; cursor: pointer; }
+
+.crossBtn { position: absolute; top: 8px; right: 8px; background: red; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; font-size: 16px; line-height: 22px; text-align: center; cursor: pointer; z-index: 10; }
 #createFolderBtn { position:fixed; bottom:90px; right:20px; background:#d94c6f; color:white; border:none; border-radius:50%; width:60px; height:60px; font-size:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,0.2);}
 #cameraBtn { position:fixed; bottom:20px; right:20px; background:#0077b6; color:white; border:none; border-radius:50%; width:60px; height:60px; font-size:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,0.2);}
 #backBtn { position:fixed; top:80px; left:20px; background:#d94c6f; color:white; border:none; border-radius:50%; width:50px; height:50px; font-size:22px; cursor:pointer; display:none; align-items:center; justify-content:center; z-index:1001; }
@@ -209,6 +182,51 @@ const fullscreenOverlay = document.getElementById("fullscreenOverlay");
 
 let currentFolderId = null;
 
+// Masonry layout function
+function applyMasonry() {
+  const container = galleryList;
+  const items = Array.from(container.getElementsByClassName("galleryItem"));
+  if (!items.length) return;
+
+  const waitForImages = () => {
+    return new Promise(resolve => {
+      let tries = 0;
+      const interval = setInterval(() => {
+        const allLoaded = items.every(item => item.offsetHeight > 0);
+        tries++;
+        if (allLoaded || tries > 100) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 20);
+    });
+  };
+
+  waitForImages().then(() => {
+    const gap = 10;
+    const minColumnWidth = galleryList.clientWidth < 500 ? 160 : 200;
+    const columnCount = Math.max(1, Math.floor((galleryList.clientWidth + gap) / (minColumnWidth + gap)));
+    const columnHeights = Array(columnCount).fill(0);
+    
+    // Distribute width evenly across columns to avoid gaps
+    const availableWidth = galleryList.clientWidth;
+    const actualColumnWidth = (availableWidth - (columnCount - 1) * gap) / columnCount;
+
+    items.forEach(item => {
+      const h = item.offsetHeight;
+      const minCol = columnHeights.indexOf(Math.min(...columnHeights));
+      const x = minCol * (actualColumnWidth + gap);
+      const y = columnHeights[minCol];
+
+      item.style.transform = `translate(${x}px, ${y}px)`;
+      item.style.width = actualColumnWidth + "px";
+      columnHeights[minCol] += h + gap;
+    });
+
+    galleryList.style.height = Math.max(...columnHeights) + 40 + "px";
+  });
+}
+
 const checkAuth = async () => {
   try {
     const user = await auth.getUser();
@@ -277,7 +295,7 @@ async function loadFolders() {
 async function openFolder(folderId) {
   currentFolderId = folderId;
   foldersList.style.display = "none";
-  galleryList.style.display = "grid";
+  galleryList.style.display = "block";
   backBtn.style.display = "flex";
   
   try {
@@ -319,6 +337,8 @@ async function openFolder(folderId) {
         galleryList.appendChild(imgDiv);
       });
     }
+    // Apply masonry layout after all images are appended
+    applyMasonry();
   } catch (e) {
     console.error('Open folder error:', e);
     alert('Failed to load folder: ' + e.message);
@@ -402,7 +422,7 @@ imageFile.addEventListener("change", async (e) => {
 
   for (const file of files) {
     try {
-      const path = `gallery_${Date.now()}_${Math.random().toString(36).substr(2, 5)}_${f.name}`;
+      const path = `gallery_${Date.now()}_${Math.random().toString(36).substr(2, 5)}_${file.name}`;
       
       // Upload with cache headers for faster subsequent loads
       const { error: uploadError } = await supabase.storage
@@ -516,6 +536,17 @@ async function openCamera(folderId) {
     alert('Camera error: ' + e.message);
   }
 }
+
+// Recalculate masonry on window resize and orientation change
+window.addEventListener("resize", applyMasonry);
+window.addEventListener("orientationchange", applyMasonry);
+
+// Watch for dynamic changes
+const observer = new MutationObserver(() => {
+  if (galleryList.style.display !== "none") applyMasonry();
+});
+observer.observe(galleryList, { childList: true, subtree: true });
+
 </script>
 
 <script>
