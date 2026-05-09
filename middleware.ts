@@ -23,8 +23,12 @@ export async function middleware(request: NextRequest) {
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      console.error('Missing Supabase environment variables in middleware');
-      return redirectToLogin(request);
+      console.error('Missing Supabase environment variables in middleware', {
+        hasUrl: !!supabaseUrl,
+        hasKey: !!supabaseAnonKey,
+      });
+      // Allow the request through - let client-side AuthGuard handle it
+      return NextResponse.next();
     }
 
     let response = NextResponse.next({ request });
@@ -50,12 +54,7 @@ export async function middleware(request: NextRequest) {
       },
     );
 
-    const { data: { session }, error } = await supabase.auth.getSession();
-
-    if (error) {
-      console.error('Session error:', error);
-      return redirectToLogin(request);
-    }
+    const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {
       return redirectToLogin(request);
@@ -64,7 +63,8 @@ export async function middleware(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('Middleware error:', error instanceof Error ? error.message : error);
-    return redirectToLogin(request);
+    // Don't return error - let client-side handle it
+    return NextResponse.next();
   }
 }
 
