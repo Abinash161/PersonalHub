@@ -77,7 +77,11 @@ function redirectToLogin(request: NextRequest) {
 // Configure which routes the middleware should run on
 export const config = {
   matcher: [
-    // Only run middleware on specific routes
+    // Only run middleware on protected routes
     '/dashboard/:path*',
+  ],
+  // These will NOT run middleware
+  unstable_allowDynamic: [
+    '/node_modules/@supabase/ssr/**',
   ],
 };
