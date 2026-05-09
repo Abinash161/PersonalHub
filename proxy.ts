@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
 /**
- * Server-side middleware for route protection.
+ * Server-side proxy for route protection.
  * Validates authentication before allowing access to protected routes.
  * This runs on the server edge and cannot be bypassed by client-side manipulation.
  */
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   try {
     const { pathname } = request.nextUrl;
 
@@ -23,7 +23,7 @@ export async function middleware(request: NextRequest) {
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      console.error('Missing Supabase environment variables in middleware', {
+      console.error('Missing Supabase environment variables in proxy', {
         hasUrl: !!supabaseUrl,
         hasKey: !!supabaseAnonKey,
       });
@@ -62,7 +62,7 @@ export async function middleware(request: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error('Middleware error:', error instanceof Error ? error.message : error);
+    console.error('Proxy error:', error instanceof Error ? error.message : error);
     // Don't return error - let client-side handle it
     return NextResponse.next();
   }
@@ -74,13 +74,13 @@ function redirectToLogin(request: NextRequest) {
   return NextResponse.redirect(loginUrl);
 }
 
-// Configure which routes the middleware should run on
+// Configure which routes the proxy should run on
 export const config = {
   matcher: [
-    // Only run middleware on protected routes
+    // Only run proxy on protected routes
     '/dashboard/:path*',
   ],
-  // These will NOT run middleware
+  // These will NOT run the proxy
   unstable_allowDynamic: [
     '/node_modules/@supabase/ssr/**',
   ],
