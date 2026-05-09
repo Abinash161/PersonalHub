@@ -7,23 +7,20 @@ import { useRouter } from 'next/navigation';
 export default function LoginPage() {
   const { login, signup, user } = useAuth();
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const [isSignup, setIsSignup] = useState(false);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [error, setError]       = useState('');
+  const [loading, setLoading]   = useState(false);
 
   useEffect(() => {
-    if (user) {
-      router.push('/dashboard');
-    }
+    if (user) router.push('/dashboard');
   }, [user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
       if (isSignup) {
         await signup(email, password);
@@ -38,82 +35,115 @@ export default function LoginPage() {
     }
   };
 
-  return (
-    <div className="main">
-      <div className="ambient ambient-1" />
-      <div className="ambient ambient-2" />
-      <div className="ambient ambient-3" />
+  const inputCls =
+    'w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-[14px] text-white placeholder-white/25 outline-none transition focus:border-indigo-500/50 focus:bg-indigo-500/5';
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '24px',
-          minHeight: 'calc(100vh - 2rem)',
-          alignItems: 'center',
-          maxWidth: '1100px',
-          margin: '0 auto',
-          paddingInline: '24px',
-        }}
-      >
-        <section>
-          <div className="panel">
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' }}>
-              <div className="nav-logo-icon" style={{ width: 48, height: 48, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span aria-hidden style={{ fontSize: 20 }}>✨</span>
+  return (
+    <div
+      className="relative min-h-screen overflow-hidden"
+      style={{ background: '#080b14', fontFamily: "'Sora', 'Inter', sans-serif" }}
+    >
+      {/* Google font */}
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap');`}</style>
+
+      {/* Ambient glows */}
+      <div aria-hidden className="pointer-events-none fixed inset-0">
+        <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-indigo-600/15 blur-[100px]" />
+        <div className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-cyan-500/10 blur-[100px]" />
+        <div className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-600/8 blur-[80px]" />
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 mx-auto grid min-h-screen max-w-[1100px] grid-cols-1 items-center gap-8 px-6 py-12 lg:grid-cols-2">
+
+        {/* ── Left: hero ── */}
+        <section className="hidden lg:block">
+          <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-8">
+            {/* Logo */}
+            <div className="mb-8 flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 text-xl">
+                ✨
               </div>
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text2)', letterSpacing: '0.12em' }}>
-                  PersonalHub
-                </p>
-                <h1 className="section-title" style={{ marginTop: 6 }}>Your private digital sanctuary</h1>
+                <p className="text-[11px] font-bold uppercase tracking-widest text-white/40">PersonalHub</p>
+                <h1 className="mt-0.5 text-[18px] font-bold text-white">Your private digital sanctuary</h1>
               </div>
             </div>
 
-            <p style={{ color: 'var(--text3)', maxWidth: 520, lineHeight: 1.6 }}>Keep notes, music, photos, and letters in one polished space with a calm dark interface, subtle motion, and instant access across devices.</p>
+            <p className="mb-8 text-[14px] leading-relaxed text-white/40">
+              Keep notes, music, photos, and letters in one polished space — calm dark interface, instant access across devices.
+            </p>
 
-            <div style={{ marginTop: 18, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            {/* Feature cards */}
+            <div className="grid grid-cols-2 gap-3">
               {[
-                { title: 'Notes that feel fast', body: 'Clean workspace, quick editing, zero clutter.' },
-                { title: 'Music that stays handy', body: 'Playback controls right where you need them.' },
-                { title: 'Photos with breathing room', body: 'Soft grids, better spacing, stronger contrast.' },
-                { title: 'Letters with presence', body: 'A quieter layout for writing that feels intentional.' },
+                { emoji: '📝', title: 'Notes that feel fast',      body: 'Clean workspace, quick editing, zero clutter.' },
+                { emoji: '🎵', title: 'Music that stays handy',    body: 'Playback controls right where you need them.' },
+                { emoji: '🖼️', title: 'Photos with breathing room', body: 'Soft grids, better spacing, stronger contrast.' },
+                { emoji: '💌', title: 'Letters with presence',     body: 'A quieter layout for writing that feels intentional.' },
               ].map((item) => (
-                <div key={item.title} className="note-card" style={{ padding: 12 }}>
-                  <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{item.title}</h2>
-                  <p style={{ marginTop: 6, fontSize: 13, color: 'var(--text3)' }}>{item.body}</p>
+                <div
+                  key={item.title}
+                  className="rounded-xl border border-white/8 bg-white/[0.03] p-4 transition hover:border-white/14"
+                >
+                  <div className="mb-2 text-xl">{item.emoji}</div>
+                  <h2 className="text-[13px] font-semibold text-white">{item.title}</h2>
+                  <p className="mt-1 text-[12px] leading-relaxed text-white/35">{item.body}</p>
                 </div>
               ))}
             </div>
 
-            <div style={{ marginTop: 18, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-              <span className="badge badge-cyan">Secure sign-in</span>
-              <span className="badge badge-purple">Responsive by default</span>
+            {/* Badges */}
+            <div className="mt-6 flex flex-wrap gap-2">
+              <span className="rounded-full border border-cyan-500/25 bg-cyan-500/10 px-3 py-1 text-[11px] font-semibold text-cyan-300">
+                Secure sign-in
+              </span>
+              <span className="rounded-full border border-violet-500/25 bg-violet-500/10 px-3 py-1 text-[11px] font-semibold text-violet-300">
+                Responsive by default
+              </span>
             </div>
           </div>
         </section>
 
-        <section>
-          <div className="panel">
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
-              <div>
-                <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text3)', letterSpacing: '0.12em' }}>Welcome back</p>
-                <h2 style={{ marginTop: 8, fontSize: 20, fontWeight: 800, color: 'var(--text)' }}>{isSignup ? 'Create your account' : 'Sign in to continue'}</h2>
-                <p style={{ marginTop: 8, color: 'var(--text3)' }}>{isSignup ? 'Create your secure hub and start organizing everything in one place.' : 'Pick up where you left off with your personal notes, music, and photos.'}</p>
+        {/* ── Right: auth form ── */}
+        <section className="w-full">
+          <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-8">
+            {/* Mobile logo */}
+            <div className="mb-6 flex items-center gap-3 lg:hidden">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 text-lg">
+                ✨
               </div>
-
-              <div style={{ display: 'none' }} />
+              <span className="text-[16px] font-bold text-white">PersonalHub</span>
             </div>
 
+            <p className="text-[11px] font-bold uppercase tracking-widest text-white/30">
+              {isSignup ? 'Get started' : 'Welcome back'}
+            </p>
+            <h2 className="mt-2 text-[22px] font-extrabold tracking-tight text-white">
+              {isSignup ? 'Create your account' : 'Sign in to continue'}
+            </h2>
+            <p className="mt-2 mb-8 text-[13px] text-white/35">
+              {isSignup
+                ? 'Create your secure hub and start organizing everything in one place.'
+                : 'Pick up where you left off with your personal notes, music, and photos.'}
+            </p>
+
+            {/* Error */}
             {error && (
-              <div role="alert" style={{ marginBottom: 12, borderRadius: 12, border: '1px solid rgba(240,80,80,0.2)', background: 'rgba(240,80,80,0.06)', padding: '10px 12px', color: 'var(--text)' }}>
+              <div
+                role="alert"
+                className="mb-5 rounded-xl border border-red-500/20 bg-red-500/8 px-4 py-3 text-[13px] text-red-300"
+              >
                 {error}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12 }}>
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="email" className="field-label">Email</label>
+                <label htmlFor="email" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-widest text-white/30">
+                  Email
+                </label>
                 <input
                   id="email"
                   type="email"
@@ -121,13 +151,15 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="field-input"
                   autoComplete="email"
+                  className={inputCls}
                 />
               </div>
 
               <div>
-                <label htmlFor="password" className="field-label">Password</label>
+                <label htmlFor="password" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-widest text-white/30">
+                  Password
+                </label>
                 <input
                   id="password"
                   type="password"
@@ -135,29 +167,31 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="field-input"
                   autoComplete={isSignup ? 'new-password' : 'current-password'}
+                  className={inputCls}
                 />
               </div>
 
-              <button type="submit" disabled={loading} className="btn-primary">
+              <button
+                type="submit"
+                disabled={loading}
+                className="mt-2 w-full rounded-xl py-3 text-[14px] font-semibold text-white transition hover:-translate-y-0.5 hover:opacity-90 disabled:opacity-50 disabled:hover:translate-y-0"
+                style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+              >
                 {loading ? 'Please wait…' : isSignup ? 'Create account' : 'Sign in'}
               </button>
             </form>
 
-            <div style={{ marginTop: 14, textAlign: 'center', color: 'var(--text3)' }}>
+            <p className="mt-6 text-center text-[13px] text-white/30">
               {isSignup ? 'Already have an account?' : 'New here?'}{' '}
               <button
                 type="button"
-                onClick={() => {
-                  setIsSignup(!isSignup);
-                  setError('');
-                }}
-                style={{ fontWeight: 700, color: 'var(--text)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                onClick={() => { setIsSignup(!isSignup); setError(''); }}
+                className="font-semibold text-white transition hover:text-indigo-300"
               >
                 {isSignup ? 'Sign in' : 'Create an account'}
               </button>
-            </div>
+            </p>
           </div>
         </section>
       </div>
