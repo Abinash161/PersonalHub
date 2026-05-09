@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   try {
+    const { pathname } = request.nextUrl;
+
+    // These routes are always public — bail out immediately, no Supabase call needed
+    const publicRoutes = ['/', '/sign-up'];
+    if (publicRoutes.includes(pathname)) {
+      return NextResponse.next();
+    }
+
     let supabaseResponse = NextResponse.next({
       request: {
         headers: request.headers,
@@ -13,7 +21,7 @@ export async function middleware(request: NextRequest) {
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      console.error('Missing Supabase environment variables in middleware');
+      console.error('Missing Supabase environment variables in proxy');
       return NextResponse.next();
     }
 
@@ -32,7 +40,7 @@ export async function middleware(request: NextRequest) {
               supabaseResponse.cookies.set(name, value, options);
             });
           } catch (e) {
-            console.error('Error setting cookies in middleware:', e);
+            console.error('Error setting cookies in proxy:', e);
           }
         },
       },
@@ -42,10 +50,8 @@ export async function middleware(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const { pathname } = request.nextUrl;
-    const publicRoutes = ['/', '/sign-up'];
-
-    if (!user && !publicRoutes.includes(pathname)) {
+    // Only redirect if hitting a protected route without a session
+    if (!user) {
       const loginUrl = request.nextUrl.clone();
       loginUrl.pathname = '/';
       return NextResponse.redirect(loginUrl);
@@ -53,7 +59,7 @@ export async function middleware(request: NextRequest) {
 
     return supabaseResponse;
   } catch (error) {
-    console.error('Middleware error:', error instanceof Error ? error.message : error);
+    console.error('Proxy error:', error instanceof Error ? error.message : error);
     return NextResponse.next();
   }
 }
