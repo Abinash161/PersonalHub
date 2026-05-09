@@ -1,38 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
-/**
- * Server-side proxy for route protection.
- * Validates authentication before allowing access to protected routes.
- * This runs on the server edge and cannot be bypassed by client-side manipulation.
- */
-
 export async function proxy(request: NextRequest) {
   try {
-    const { pathname } = request.nextUrl;
-
-    // Public routes that don't require authentication
-    const publicRoutes = ['/', '/sign-up'];
-
-    // If the route is public, allow it through
-    if (publicRoutes.includes(pathname)) {
-      return NextResponse.next();
-    }
+    // 1. Create an initial response object
+    let supabaseResponse = NextResponse.next({
+      request: {
+        headers: request.headers,
+      },
+    });
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      console.error('Missing Supabase environment variables in proxy', {
-        hasUrl: !!supabaseUrl,
-        hasKey: !!supabaseAnonKey,
-      });
-      // Allow the request through - let client-side AuthGuard handle it
+      console.error('Missing Supabase environment variables in proxy');
       return NextResponse.next();
     }
 
-    let response = NextResponse.next({ request });
-
+    // 2. Initialize Supabase client with Edge-compatible cookie handling
     const supabase = createServerClient(
       supabaseUrl,
       supabaseAnonKey,
@@ -43,45 +29,53 @@ export async function proxy(request: NextRequest) {
           },
           setAll(cookiesToSet) {
             try {
+              // Update request cookies
+              cookiesToSet.forEach(({ name, value }) => {
+                request.cookies.set(name, value);
+              });
+
+              // Re-create the response to apply the updated request cookies
+              supabaseResponse = NextResponse.next({
+                request,
+              });
+
+              // Apply cookies to the outgoing response
               cookiesToSet.forEach(({ name, value, options }) => {
-                response.cookies.set(name, value, options);
+                supabaseResponse.cookies.set(name, value, options);
               });
             } catch (e) {
-              console.error('Error setting cookies:', e);
+              console.error('Error setting cookies on Vercel Edge:', e);
             }
           },
         },
-      },
+      }
     );
 
-    const { data: { session } } = await supabase.auth.getSession();
+    // 3. IMPORTANT: Use getUser() instead of getSession() for Vercel Edge
+    // This securely validates the token against Supabase rather than just reading a potentially stale cookie
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (!session) {
-      return redirectToLogin(request);
+    const { pathname } = request.nextUrl;
+    const publicRoutes = ['/', '/sign-up'];
+
+    // 4. Protection Logic
+    if (!user && !publicRoutes.includes(pathname)) {
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = '/';
+      return NextResponse.redirect(loginUrl);
     }
 
-    return response;
+    return supabaseResponse;
+
   } catch (error) {
     console.error('Proxy error:', error instanceof Error ? error.message : error);
-    // Don't return error - let client-side handle it
     return NextResponse.next();
   }
 }
 
-function redirectToLogin(request: NextRequest) {
-  const loginUrl = request.nextUrl.clone();
-  loginUrl.pathname = '/';
-  return NextResponse.redirect(loginUrl);
-}
-
-// Configure which routes the proxy should run on
+// 5. Cleaned up config matcher
 export const config = {
   matcher: [
-    // Only run proxy on protected routes
     '/dashboard/:path*',
-  ],
-  // These will NOT run the proxy
-  unstable_allowDynamic: [
-    '/node_modules/@supabase/ssr/**',
   ],
 };
